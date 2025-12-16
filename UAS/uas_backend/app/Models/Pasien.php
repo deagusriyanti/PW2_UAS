@@ -16,8 +16,8 @@ class Pasien extends Model
         'no_telepon',
         'riwayat_penyakit',
         'alergi_obat',
-        'telepon_kontak_darurat',
-        'tanggal_periksa_terakhir'
+        'telepon_kontak_darurat'
+       
     ];
 
     public function kunjungan()

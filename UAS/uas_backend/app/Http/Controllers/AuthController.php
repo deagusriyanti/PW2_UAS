@@ -20,7 +20,7 @@ class AuthController extends Controller
         'name' => $request->name,
         'email' => $request->email,
         'password' => Hash::make($request->password),
-        'role' => 'user'   // ✅ TAMBAHKAN INI
+        'role' => 'user'  
     ]);
 
     return response()->json([
@@ -55,7 +55,7 @@ class AuthController extends Controller
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
-            'role' => $user->role   // ✅ INI PENTING
+            'role' => $user-> role   
         ]
     ]);
 }

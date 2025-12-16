@@ -1,20 +1,24 @@
 import { useState } from "react";
 import api from "../api/axiosClient";
+import { FaUserPlus } from "react-icons/fa";
 
 export default function TambahPasien() {
-  const [form, setForm] = useState({
+  const initialForm = {
     nama: "",
     nik: "",
-    jenis_kelamin: "L",
+    jenis_kelamin: "",
     tanggal_lahir: "",
     golongan_darah: "",
     alamat: "",
     no_telepon: "",
     riwayat_penyakit: "",
     alergi_obat: "",
+    nama_kontak_darurat: "",
     telepon_kontak_darurat: "",
-    tanggal_periksa_terakhir: "",
-  });
+  };
+
+  const [form, setForm] = useState(initialForm);
+  const [focusField, setFocusField] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -24,136 +28,195 @@ export default function TambahPasien() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!form.jenis_kelamin) {
+      alert("Silakan pilih jenis kelamin!");
+      return;
+    }
+
     try {
       const res = await api.post("/pasien", form);
       alert(res.data.message);
-      console.log(res.data);
+      setForm(initialForm); // reset form setelah berhasil
     } catch (err) {
-      console.log(err.response.data); // ← ERROR 422 muncul di sini
+      console.log(err.response?.data);
       alert("Gagal menambah data pasien");
     }
   };
 
+  const fields = [
+    { label: "Nama", name: "nama", type: "text" },
+    { label: "NIK", name: "nik", type: "text" },
+    { 
+      label: "Jenis Kelamin", 
+      name: "jenis_kelamin", 
+      type: "select", 
+      options: [
+        { value: "", label: "" },
+        { value: "L", label: "Laki-laki" }, 
+        { value: "P", label: "Perempuan" }
+      ] 
+    },
+    { label: "Tanggal Lahir", name: "tanggal_lahir", type: "date" },
+    { label: "Golongan Darah", name: "golongan_darah", type: "text" },
+    { label: "Alamat", name: "alamat", type: "textarea" },
+    { label: "No Telepon", name: "no_telepon", type: "text" },
+    { label: "Riwayat Penyakit", name: "riwayat_penyakit", type: "textarea" },
+    { label: "Alergi Obat", name: "alergi_obat", type: "textarea" },
+    { label: "Nama Kontak Darurat", name: "nama_kontak_darurat", type: "text" },
+    { label: "Telepon Kontak Darurat", name: "telepon_kontak_darurat", type: "text" },
+  ];
+
   return (
-    <form
-      onSubmit={handleSubmit}
-      style={{
-        width: "60%",
-        margin: "auto",
-        padding: "20px",
-        background: "#f9f9f9",
-        borderRadius: "8px",
-        boxShadow: "0 0 10px rgba(0,0,0,0.1)",
-      }}
-    >
-      <h2 style={{ textAlign: "center" }}>Tambah Data Pasien</h2>
+    <form onSubmit={handleSubmit} style={styles.form}>
+      <div style={styles.titleBox}>
+        <FaUserPlus style={styles.titleIcon} />
+        <h2 style={styles.title}>Tambah Data Pasien</h2>
+      </div>
 
-      <table style={{ width: "100%", borderSpacing: "10px" }}>
-        <tbody>
-          <tr>
-            <td>Nama</td>
-            <td>
-              <input name="nama" value={form.nama} onChange={handleChange} required style={{ width: "100%", padding: "8px" }} />
-            </td>
-          </tr>
+      {fields.map((field) => (
+        <div key={field.name} style={styles.fieldWrapper}>
+          <label style={styles.label}>{field.label}</label>
+          {field.type === "textarea" ? (
+            <textarea
+              name={field.name}
+              value={form[field.name]}
+              onChange={handleChange}
+              style={{
+                ...styles.inputArea,
+                ...(focusField === field.name ? styles.inputFocus : {}),
+              }}
+              onFocus={() => setFocusField(field.name)}
+              onBlur={() => setFocusField("")}
+            />
+          ) : field.type === "select" ? (
+            <select
+              name={field.name}
+              value={form[field.name]}
+              onChange={handleChange}
+              style={{
+                ...styles.input,
+                ...(focusField === field.name ? styles.inputFocus : {}),
+              }}
+              onFocus={() => setFocusField(field.name)}
+              onBlur={() => setFocusField("")}
+            >
+              {field.options.map((opt) => (
+                <option key={opt.value} value={opt.value} disabled={opt.value === ""}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <input
+              type={field.type}
+              name={field.name}
+              value={form[field.name]}
+              onChange={handleChange}
+              style={{
+                ...styles.input,
+                ...(focusField === field.name ? styles.inputFocus : {}),
+              }}
+              onFocus={() => setFocusField(field.name)}
+              onBlur={() => setFocusField("")}
+            />
+          )}
+        </div>
+      ))}
 
-          <tr>
-            <td>NIK</td>
-            <td>
-              <input name="nik" value={form.nik} onChange={handleChange} required style={{ width: "100%", padding: "8px" }} />
-            </td>
-          </tr>
-
-          <tr>
-            <td>Jenis Kelamin</td>
-            <td>
-              <select name="jenis_kelamin" value={form.jenis_kelamin} onChange={handleChange} style={{ width: "100%", padding: "8px" }}>
-                <option value="L">Laki-laki</option>
-                <option value="P">Perempuan</option>
-              </select>
-            </td>
-          </tr>
-
-          <tr>
-            <td>Tanggal Lahir</td>
-            <td>
-              <input type="date" name="tanggal_lahir" value={form.tanggal_lahir} onChange={handleChange} style={{ width: "100%", padding: "8px" }} />
-            </td>
-          </tr>
-
-          <tr>
-            <td>Golongan Darah</td>
-            <td>
-              <input name="golongan_darah" value={form.golongan_darah} onChange={handleChange} style={{ width: "100%", padding: "8px" }} />
-            </td>
-          </tr>
-
-          <tr>
-            <td>Alamat</td>
-            <td>
-              <textarea name="alamat" value={form.alamat} onChange={handleChange} style={{ width: "100%", padding: "8px" }} />
-            </td>
-          </tr>
-
-          <tr>
-            <td>No Telepon</td>
-            <td>
-              <input name="no_telepon" value={form.no_telepon} onChange={handleChange} style={{ width: "100%", padding: "8px" }} />
-            </td>
-          </tr>
-
-          <tr>
-            <td>Riwayat Penyakit</td>
-            <td>
-              <textarea name="riwayat_penyakit" value={form.riwayat_penyakit} onChange={handleChange} style={{ width: "100%", padding: "8px" }} />
-            </td>
-          </tr>
-
-          <tr>
-            <td>Alergi Obat</td>
-            <td>
-              <textarea name="alergi_obat" value={form.alergi_obat} onChange={handleChange} style={{ width: "100%", padding: "8px" }} />
-            </td>
-          </tr>
-
-          <tr>
-            <td>Nama Kontak Darurat</td>
-            <td>
-              <input name="nama_kontak_darurat" value={form.nama_kontak_darurat} onChange={handleChange} style={{ width: "100%", padding: "8px" }} />
-            </td>
-          </tr>
-
-          <tr>
-            <td>Telepon Kontak Darurat</td>
-            <td>
-              <input name="telepon_kontak_darurat" value={form.telepon_kontak_darurat} onChange={handleChange} style={{ width: "100%", padding: "8px" }} />
-            </td>
-          </tr>
-
-          <tr>
-            <td>Tanggal Periksa Terakhir</td>
-            <td>
-              <input type="date" name="tanggal_periksa_terakhir" value={form.tanggal_periksa_terakhir} onChange={handleChange} style={{ width: "100%", padding: "8px" }} />
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <button
-        type="submit"
-        style={{
-          marginTop: "15px",
-          width: "100%",
-          padding: "10px",
-          background: "#007bff",
-          color: "white",
-          border: "none",
-          borderRadius: "5px",
-          cursor: "pointer",
-        }}
-      >
-        Simpan
-      </button>
+      <button type="submit" style={styles.submitBtn}>Simpan</button>
     </form>
   );
 }
+
+const styles = {
+  form: {
+    width: "100%",
+    height: "100%",
+    background: "#ffffff",
+    padding: "30px",
+    borderRadius: "12px",
+    boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+    fontFamily: "Arial, sans-serif",
+    boxSizing: "border-box",
+    overflowY: "auto",
+    scrollbarWidth: "none",
+    msOverflowStyle: "none",
+  },
+
+  titleBox: {
+    display: "flex",
+    alignItems: "center",
+    background: "linear-gradient(180deg, #078368ff, #06352d)",
+    padding: "15px 20px",
+    borderRadius: "12px",
+    marginBottom: "25px",
+    color: "#fff",
+  },
+
+  titleIcon: {
+    marginRight: "12px",
+    fontSize: "24px",
+  },
+
+  title: {
+    fontSize: "22px",
+    fontWeight: "700",
+    margin: 0,
+  },
+
+  fieldWrapper: {
+    display: "flex",
+    flexDirection: "column",
+    marginBottom: "18px",
+  },
+
+  label: {
+    fontWeight: "600",
+    marginBottom: "8px",
+    color: "#083b34",
+  },
+
+  input: {
+    width: "100%",
+    padding: "16px",
+    borderRadius: "12px",
+    border: "1px solid #ccc",
+    fontSize: "15px",
+    boxSizing: "border-box",
+    background: "#f9f9f9",
+    transition: "all 0.2s",
+  },
+
+  inputArea: {
+    width: "100%",
+    padding: "16px",
+    borderRadius: "12px",
+    border: "1px solid #ccc",
+    fontSize: "15px",
+    minHeight: "90px",
+    boxSizing: "border-box",
+    background: "#f9f9f9",
+    resize: "none",
+    transition: "all 0.2s",
+  },
+
+  inputFocus: {
+    border: "1px solid #007bff",
+    boxShadow: "0 0 8px rgba(0,123,255,0.3)",
+    outline: "none",
+  },
+
+  submitBtn: {
+    marginTop: "25px",
+    width: "100%",
+    padding: "16px",
+    borderRadius: "12px",
+    border: "none",
+    background: "#083b34",
+    color: "#fff",
+    fontSize: "17px",
+    fontWeight: "700",
+    cursor: "pointer",
+    transition: "0.3s",
+  },
+};
