@@ -52,7 +52,7 @@ export default function Layout() {
       <span style={styles.iconCircle}>
         <FaUserInjured />
       </span>
-      Daftar Pasien
+      Data Pasien
     </Link>
   </li>
 

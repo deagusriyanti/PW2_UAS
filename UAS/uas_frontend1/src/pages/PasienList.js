@@ -1,15 +1,20 @@
 import React, { useEffect, useState } from "react";
 import axiosClient from "../api/axiosClient";
 import { Link } from "react-router-dom";
+import { VscSearch } from "react-icons/vsc";
+import { VscOrganization } from "react-icons/vsc"; 
 
 export default function PasienList() {
   const [pasiens, setPasiens] = useState([]);
+  const [search, setSearch] = useState("");
+  const role = localStorage.getItem("role");
 
   useEffect(() => {
     axiosClient.get("/pasien").then((res) => {
       setPasiens(res.data);
     });
   }, []);
+
   const deletePasien = (id) => {
     if (window.confirm("Yakin ingin menghapus data pasien ini?")) {
       axiosClient.delete("/pasien/" + id).then(() => {
@@ -17,122 +22,92 @@ export default function PasienList() {
       });
     }
   };
-  const role = localStorage.getItem("role");
+
+  const filteredPasiens = pasiens.filter(
+    (p) =>
+      p.nama.toLowerCase().includes(search.toLowerCase()) ||
+      p.nik.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
-    <div
-      style={{
-        padding: "30px",
-        fontFamily: "Arial, sans-serif",
-      }}
-    >
-      <h1
-        style={{
-          marginBottom: "20px",
-          textAlign: "center",
-          fontSize: "28px",
-          color: "#333",
-        }}
-      >
-        Data Pasien
-      </h1>
+    <div style={styles.wrapper}>
+      <h1 style={styles.title}>
+  <VscOrganization style={styles.titleIcon} /> Data Pasien
+</h1>
+      {/* Search Bar */}
+      <div style={styles.searchWrapper}>
+        <div style={styles.searchBox}>
+          <div style={styles.iconCircle}>
+            <VscSearch style={styles.searchIcon} />
+          </div>
+          <input
+            type="text"
+            placeholder="Cari pasien berdasarkan nama atau NIK..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={styles.searchInput}
+          />
+        </div>
+      </div>
 
-      <div
-        style={{
-          overflowX: "auto",
-          background: "#fff",
-          padding: "15px",
-          borderRadius: "10px",
-          boxShadow: "0 3px 10px rgba(0,0,0,0.1)",
-        }}
-      >
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            minWidth: "900px",
-          }}
-        >
+      <div style={styles.tableWrapper}>
+        <table style={styles.table}>
           <thead>
-            <tr
-              style={{
-                background: "#007bff",
-                color: "white",
-                textAlign: "left",
-              }}
-            >
-              <th style={thStyle}>Nama</th>
-              <th style={thStyle}>NIK</th>
-              <th style={thStyle}>Jenis Kelamin</th>
-              <th style={thStyle}>Tanggal Lahir</th>
-              <th style={thStyle}>Golongan Darah</th>
-              <th style={thStyle}>Alamat</th>
-              <th style={thStyle}>No Telepon</th>
-              <th style={thStyle}>Riwayat Penyakit</th>
-              <th style={thStyle}>Alergi Obat</th>
-              <th style={thStyle}>Kontak Darurat</th>
-              <th style={thStyle}>Tanggal Periksa Terakhir</th>
-              <th style={thStyle}>Aksi</th>
+            <tr>
+              <th style={styles.th}>Nama</th>
+              <th style={styles.th}>NIK</th>
+              <th style={styles.th}>Jenis Kelamin</th>
+              <th style={styles.th}>Tanggal Lahir</th>
+              <th style={styles.th}>Golongan Darah</th>
+              <th style={styles.th}>Alamat</th>
+              <th style={styles.th}>No Telepon</th>
+              <th style={styles.th}>Aksi</th>
             </tr>
           </thead>
 
           <tbody>
-            {pasiens.map((p, index) => (
-              <tr
-                key={p.id}
-                style={{
-                  background: index % 2 === 0 ? "#f8f9fa" : "white",
-                  transition: "0.2s",
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "#e9f3ff")}
-                onMouseLeave={(e) => (e.currentTarget.style.background = index % 2 === 0 ? "#f8f9fa" : "white")}
-              >
-                <td style={tdStyle}>{p.nama}</td>
-                <td style={tdStyle}>{p.nik}</td>
-                <td style={tdStyle}>{p.jenis_kelamin}</td>
-                <td style={tdStyle}>{p.tanggal_lahir}</td>
-                <td style={tdStyle}>{p.golongan_darah}</td>
-                <td style={tdStyle}>{p.alamat}</td>
-                <td style={tdStyle}>{p.no_telepon}</td>
-                <td style={tdStyle}>{p.riwayat_penyakit}</td>
-                <td style={tdStyle}>{p.alergi_obat}</td>
-                <td style={tdStyle}>{p.telepon_kontak_darurat}</td>
-                <td style={tdStyle}>{p.tanggal_periksa_terakhir}</td>
-
-                <td style={tdStyle}>
-                  {React.createElement(
-                    React.Fragment,
-                    null,
-
-                    // Tombol DETAIL (admin & user)
-                    React.createElement(Link, { style: linkStyle, to: p.id + "/kunjungan" }, "Detail"),
-
-                    // ADMIN ONLY
-                    role === "admin"
-                      ? React.createElement(
-                          React.Fragment,
-                          null,
-                          " | ",
-                          React.createElement(Link, { style: linkStyle, to: "/pasien/edit/" + p.id }, "Edit"),
-                          " | ",
-                          React.createElement(
-                            "span",
-                            {
-                              onClick: () => deletePasien(p.id),
-                              style: {
-                                color: "red",
-                                cursor: "pointer",
-                                fontWeight: "bold",
-                              },
-                            },
-                            "Delete"
-                          )
-                        )
-                      : null
-                  )}
+            {filteredPasiens.length > 0 ? (
+              filteredPasiens.map((p, index) => (
+                <tr
+                  key={p.id}
+                  style={{
+                    background: index % 2 === 0 ? "#f9f9f9" : "#fff",
+                    transition: "0.3s",
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "#e0f7ff")}
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.background = index % 2 === 0 ? "#f9f9f9" : "#fff")
+                  }
+                >
+                  <td style={styles.td}>{p.nama}</td>
+                  <td style={styles.td}>{p.nik}</td>
+                  <td style={styles.td}>{p.jenis_kelamin}</td>
+                  <td style={styles.td}>{p.tanggal_lahir}</td>
+                  <td style={styles.td}>{p.golongan_darah}</td>
+                  <td style={styles.td}>{p.alamat}</td>
+                  <td style={styles.td}>{p.no_telepon}</td>
+                  <td style={styles.td}>
+                    <Link style={styles.detailBtn} to={`/app/pasien/detail/${p.id}`}>
+                      Detail
+                    </Link>
+                    {role === "admin" && (
+                      <button
+                        style={styles.deleteBtn}
+                        onClick={() => deletePasien(p.id)}
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={8} style={styles.noData}>
+                  Tidak ada pasien ditemukan
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
@@ -140,22 +115,120 @@ export default function PasienList() {
   );
 }
 
-// STYLE OBJECT
-const thStyle = {
-  padding: "12px 10px",
-  fontSize: "14px",
-  borderBottom: "2px solid #005dc1",
-};
+// Styles
+const styles = {
+  wrapper: {
+    padding: "15px",
+    fontFamily: "Arial, sans-serif",
+  },
+  title: {
+  textAlign: "center",
+  fontSize: "32px",
+  fontWeight: "700",
+  marginBottom: "50px",
+  background: "linear-gradient(90deg, #078368, #17a2b8)",
+  WebkitBackgroundClip: "text",
+  WebkitTextFillColor: "transparent",
+  textShadow: "1px 1px 2px rgba(0,0,0,0.2)",
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "10px",
+    
 
-const tdStyle = {
-  padding: "10px",
-  borderBottom: "1px solid #ddd",
-  fontSize: "14px",
-  color: "#333",
-};
+},
+titleIcon: {
+  fontSize: "32px",
+  color: "#078368",
+},
 
-const linkStyle = {
-  color: "#007bff",
-  textDecoration: "none",
-  fontWeight: "bold",
+  searchWrapper: {
+    marginBottom: "20px",
+    display: "flex",
+    justifyContent: "center",
+  },
+  searchBox: {
+    display: "flex",
+    alignItems: "center",
+    width: "100%",
+    maxWidth: "600px",
+    background: "#fff",
+    borderRadius: "12px",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+    padding: "5px 10px",
+  },
+  iconCircle: {
+    width: "30px",
+    height: "30px",
+    borderRadius: "50%",
+    background: "#729faeff",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: "10px",
+  },
+  searchIcon: {
+    fontSize: "15px",
+    color: "#fafcfeff",
+  },
+  searchInput: {
+    flex: 1,
+    border: "none",
+    outline: "none",
+    padding: "10px 0",
+    fontSize: "14px",
+  },
+  tableWrapper: {
+    overflowX: "auto",
+    background: "#fff",
+    padding: "15px",
+    borderRadius: "12px",
+    boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
+  },
+  table: {
+    width: "100%",
+    borderCollapse: "collapse",
+    minWidth: "900px",
+  },
+  th: {
+    padding: "12px 10px",
+    fontSize: "14px",
+    borderBottom: "2px solid #007bff",
+    borderRight: "1px solid #ddd",
+    background: "linear-gradient(90deg, #078368ff, #06352d)",
+    color: "#fff",
+    textAlign: "left",
+  },
+  td: {
+    padding: "12px 10px",
+    borderBottom: "1px solid #ddd",
+    borderRight: "1px solid #ddd",
+    fontSize: "14px",
+    color: "#333",
+  },
+  detailBtn: {
+    marginRight: "10px",
+    padding: "6px 12px",
+    borderRadius: "8px",
+    background: "#17a2b8",
+    color: "#fff",
+    cursor: "pointer",
+    border: "none",
+    fontWeight: "600",
+    textDecoration: "none",
+  },
+  deleteBtn: {
+    padding: "6px 12px",
+    borderRadius: "8px",
+    background: "#dc3545",
+    color: "#fff",
+    cursor: "pointer",
+    border: "none",
+    fontWeight: "600",
+  },
+  noData: {
+    textAlign: "center",
+    padding: "20px",
+    fontStyle: "italic",
+    color: "#555",
+  },
 };

@@ -8,6 +8,8 @@ import PasienDetail from "./pages/PasienDetail";
 import PasienForm from "./pages/PasienForm";
 import Dashboard from "./pages/dashboardd"; 
 import PasienList from "./pages/PasienList"; 
+import EditPasien from "./pages/Editpasien"; 
+import EditKunjungan from "./pages/EditKunjungan"; 
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -40,10 +42,12 @@ function App() {
           React.createElement(Route, { path: "pasien", element: React.createElement(PasienList) }),
           React.createElement(Route, { path: "pasien/tambah", element: React.createElement(PasienForm) }),
           React.createElement(Route, { path: "pasien/detail/:id", element: React.createElement(PasienDetail) }),
+          React.createElement(Route, { path: "pasien/edit/:id", element: React.createElement(EditPasien) }),
 
           // Kunjungan
           React.createElement(Route, { path: "pasien/:id/kunjungan", element: React.createElement(KunjunganList) }),
           React.createElement(Route, { path: "pasien/:id/kunjungan/tambah", element: React.createElement(KunjunganForm) }),
+          React.createElement(Route, { path: "pasien/:id/kunjungan/edit/:kunjunganId", element: React.createElement(EditKunjungan) }),
         ],
       })
     )

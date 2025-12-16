@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axiosClient from "../api/axiosClient";
-import { useNavigate, useParams } from "react-router-dom";
-import { FaNotesMedical } from "react-icons/fa";
+import { useParams, useNavigate } from "react-router-dom";
+import { FaEdit } from "react-icons/fa";
 
-export default function KunjunganForm() {
-  const { id } = useParams();
+export default function EditKunjungan() {
+  const { id, kunjunganId } = useParams(); // ambil pasienId dan kunjunganId
   const navigate = useNavigate();
 
   const initialForm = {
@@ -17,6 +17,20 @@ export default function KunjunganForm() {
   const [form, setForm] = useState(initialForm);
   const [focusField, setFocusField] = useState("");
 
+  // Ambil data kunjungan untuk prefill
+  useEffect(() => {
+    const fetchKunjungan = async () => {
+      try {
+        const res = await axiosClient.get(`/pasien/${id}/kunjungan/${kunjunganId}`);
+        setForm(res.data);
+      } catch (err) {
+        console.error(err);
+        alert("Gagal mengambil data kunjungan");
+      }
+    };
+    fetchKunjungan();
+  }, [id, kunjunganId]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
@@ -25,17 +39,17 @@ export default function KunjunganForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axiosClient.post(`/pasien/${id}/kunjungan`, form);
-      alert("Kunjungan berhasil ditambahkan!");
-      navigate(`/app/pasien/detail/${id}`);
+      await axiosClient.put(`/pasien/${id}/kunjungan/${kunjunganId}`, form);
+      alert("Data kunjungan berhasil diupdate!");
+        navigate(`/app/pasien/${id}/kunjungan`);
     } catch (err) {
-      console.log(err);
-      alert("Gagal menambah kunjungan");
+      console.error(err);
+      alert("Gagal mengupdate data kunjungan");
     }
   };
 
   const handleCancel = () => {
-    navigate(`/app/pasien/detail/${id}`); // tombol batal ke detail pasien
+      navigate(`/app/pasien/${id}/kunjungan`);
   };
 
   const fields = [
@@ -46,10 +60,11 @@ export default function KunjunganForm() {
   ];
 
   return (
+    <div style={styles.wrapper}>
       <form onSubmit={handleSubmit} style={styles.form}>
         <div style={styles.titleBox}>
-          <FaNotesMedical style={styles.titleIcon} />
-          <h2 style={styles.title}>Tambah Kunjungan</h2>
+          <FaEdit style={styles.titleIcon} />
+          <h2 style={styles.title}>Edit Kunjungan</h2>
         </div>
 
         {fields.map((field) => (
@@ -85,24 +100,29 @@ export default function KunjunganForm() {
         ))}
 
         <div style={styles.buttonGroup}>
-          <button
-            type="button"
-            style={styles.cancelBtn}
-            onClick={handleCancel}
-          >
+          <button type="button" style={styles.cancelBtn} onClick={handleCancel}>
             Batal
           </button>
           <button type="submit" style={styles.submitBtn}>
-            Simpan
+            Update
           </button>
         </div>
       </form>
+    </div>
   );
 }
 
 const styles = {
-  
-  form: {
+  wrapper: {
+    width: "100%",
+    height: "calc(100vh - 60px)",
+    overflowY: "auto",
+    display: "flex",
+    justifyContent: "center",
+    padding: "20px 0",
+    boxSizing: "border-box",
+  },
+   form: {
     width: "100%",
     height: "100%",
     background: "#ffffff",
@@ -150,8 +170,17 @@ const styles = {
     resize: "none",
     transition: "all 0.2s",
   },
-  inputFocus: { border: "1px solid #007bff", boxShadow: "0 0 8px rgba(0,123,255,0.3)", outline: "none" },
-  buttonGroup: { display: "flex", justifyContent: "flex-end", gap: "15px", marginTop: "20px" },
+  inputFocus: {
+    border: "1px solid #007bff",
+    boxShadow: "0 0 8px rgba(0,123,255,0.3)",
+    outline: "none",
+  },
+  buttonGroup: {
+    display: "flex",
+    justifyContent: "flex-end",
+    gap: "15px",
+    marginTop: "20px",
+  },
   cancelBtn: {
     padding: "12px 20px",
     borderRadius: "12px",
