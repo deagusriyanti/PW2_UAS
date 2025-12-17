@@ -12,8 +12,11 @@ export default function Layout() {
     window.location.href = "/login";
   };
 
-  const isActive = (path) => location.pathname.includes(path);
-
+  // --- Perbaikan isActive ---
+  const isActive = (path, exact = false) => {
+    if (exact) return location.pathname === path;
+    return location.pathname.startsWith(path);
+  };
 
   return (
     <div style={styles.container}>
@@ -26,59 +29,46 @@ export default function Layout() {
           </div>
           <hr style={styles.divider} />
 
-
-
           <p style={styles.navTitle}>Navigation</p>
 
           {/* Menu */}
-         <ul style={styles.menu}>
-  <li style={styles.menuItem}>
-    <Link
-      to="dashboard"
-      style={isActive("/dashboard") ? { ...styles.menuLink, ...styles.activeMenu } : styles.menuLink}
-    >
-      <span style={styles.iconCircle}>
-        <FaHome />
-      </span>
-      Dashboard
-    </Link>
-  </li>
+          <ul style={styles.menu}>
+            <li style={styles.menuItem}>
+              <Link
+                to="dashboard"
+                style={isActive("/dashboard", true) ? { ...styles.menuLink, ...styles.activeMenu } : styles.menuLink}
+              >
+                <span style={styles.iconCircle}><FaHome /></span>
+                Dashboard
+              </Link>
+            </li>
 
-  <li style={styles.menuItem}>
-    <Link
-      to="pasien"
-      style={isActive("/pasien") ? { ...styles.menuLink, ...styles.activeMenu } : styles.menuLink}
-    >
-      <span style={styles.iconCircle}>
-        <FaUserInjured />
-      </span>
-      Data Pasien
-    </Link>
-  </li>
+            <li style={styles.menuItem}>
+              <Link
+                to="pasien"
+                style={isActive("/pasien", true) ? { ...styles.menuLink, ...styles.activeMenu } : styles.menuLink}
+              >
+                <span style={styles.iconCircle}><FaUserInjured /></span>
+                Data Pasien
+              </Link>
+            </li>
 
-  {role === "admin" && (
-    <li style={styles.menuItem}>
-      <Link
-        to="pasien/tambah"
-        style={isActive("/pasien/tambah") ? { ...styles.menuLink, ...styles.activeMenu } : styles.menuLink}
-      >
-        <span style={styles.iconCircle}>
-          <FaPlus />
-        </span>
-        Tambah Pasien
-      </Link>
-    </li>
-  )}
-</ul>
-
-
-
+            {role === "admin" && (
+              <li style={styles.menuItem}>
+                <Link
+                  to="pasien/tambah"
+                  style={isActive("/pasien/tambah", true) ? { ...styles.menuLink, ...styles.activeMenu } : styles.menuLink}
+                >
+                  <span style={styles.iconCircle}><FaPlus /></span>
+                  Tambah Pasien
+                </Link>
+              </li>
+            )}
+          </ul>
         </div>
 
         {/* Logout */}
-        <button onClick={handleLogout} style={styles.logoutBtn}>
-          ⏻ Logout
-        </button>
+        <button onClick={handleLogout} style={styles.logoutBtn}>⏻ Logout</button>
       </div>
 
       {/* CONTENT */}
@@ -91,17 +81,34 @@ export default function Layout() {
   );
 }
 
+// --- Table Styles ---
+export const tableStyle = {
+  width: "100%",
+  borderCollapse: "collapse",
+  borderRadius: "12px",
+  overflow: "hidden",
+  background: "#fff",
+};
+
+export const theadStyle = {
+  backgroundImage: "linear-gradient(90deg, #078368, #17a2b8)",
+  color: "#fff",
+};
+
+export const thStyle = { padding: "12px 10px", textAlign: "left" };
+export const tdStyle = { padding: "10px" };
+export const rowEvenStyle = { backgroundColor: "#d1fae5" };
+export const rowOddStyle = { backgroundColor: "#f0fdf4" };
+
+// --- Layout Styles ---
 const styles = {
   container: {
     display: "flex",
     height: "100vh",
     background: "#083d35",
-    overflow: "hidden",
   },
-
-  /* SIDEBAR */
   sidebar: {
-    width: "220px", // sedikit lebih lebar agar menu muat
+    width: "220px",
     background: "linear-gradient(180deg, #078368ff, #06352d)",
     padding: "20px",
     color: "#fff",
@@ -109,7 +116,6 @@ const styles = {
     flexDirection: "column",
     justifyContent: "space-between",
   },
-
   logoBox: {
     width: "150px",
     height: "150px",
@@ -120,51 +126,41 @@ const styles = {
     margin: "0 auto 20px auto",
     overflow: "hidden",
   },
-
-  logoIcon: {
-    fontSize: "28px",
+  logoImage: { width: "100%", height: "100%", objectFit: "cover" },
+  divider: {
+    border: "none",
+    borderTop: "1px solid rgba(255, 255, 255, 0.4)",
+    margin: "16px 0",
   },
-
   navTitle: {
-    fontSize: "17px",            // lebih besar
-    fontWeight: "600",           // lebih tebal
+    fontSize: "17px",
+    fontWeight: "600",
     opacity: 0.85,
     marginBottom: "20px",
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", // font cantik & modern
+    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
   },
-
-  menu: {
-    listStyle: "none",
-    padding: 0,
-    margin: 0,
-  },
-
-  menuItem: {
-    marginBottom: "16px",        // lebih renggang antar menu
-  },
-
+  menu: { listStyle: "none", padding: 0, margin: 0 },
+  menuItem: { marginBottom: "16px" },
   menuLink: {
     color: "#fff",
     textDecoration: "none",
-    fontSize: "18px",            // lebih besar
+    fontSize: "18px",
     display: "flex",
     alignItems: "center",
-    gap: "15px",                 // jarak ikon dan teks
+    gap: "15px",
     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    padding: "8px 10px",         // area klik lebih nyaman
+    padding: "8px 10px",
     borderRadius: "6px",
-    transition: "all 0.2s ease", // animasi hover halus
+    transition: "all 0.2s ease",
   },
-
   activeMenu: {
     background: "#299472ff",
     color: "#fffbf0ff",
     fontWeight: "bold",
-    borderRadius: "8px",       // lebih bulat
-    padding: "10px 12px",      // lebih tinggi & lebar
-    margin: "2px 0",           // beri jarak antar menu aktif
+    borderRadius: "8px",
+    padding: "10px 12px",
+    margin: "2px 0",
   },
-
   logoutBtn: {
     background: "#b32110ff",
     border: "none",
@@ -175,43 +171,27 @@ const styles = {
     fontSize: "15px",
     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
   },
-
-  /* CONTENT */
+  iconCircle: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "36px",
+    height: "36px",
+    borderRadius: "50%",
+    background: "rgba(255, 255, 255, 0.2)",
+    color: "#fff",
+    fontSize: "18px",
+  },
   content: {
     flex: 1,
     padding: "20px",
-    marginBottom: "40px",
+    overflowY: "auto",
+    minHeight: 0,
   },
-
   contentBox: {
     background: "#fff",
-    height: "100%",
     borderRadius: "14px",
     padding: "20px",
+    minHeight: "100%",
   },
-
-  logoImage: {
-    width: "150%",
-    height: "150%",
-    objectFit: "cover",
-  },
-
-  divider: {
-    border: "none",
-    borderTop: "1px solid rgba(255, 255, 255, 0.4)",
-    margin: "16px 0",
-  },
-
-  iconCircle: {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  width: "36px",       // ukuran bulat
-  height: "36px",
-  borderRadius: "50%", // membuat bulat
-  background: "rgba(255, 255, 255, 0.2)", // warna background ikon
-  color: "#fff",       // warna ikon
-  fontSize: "18px",    // ukuran ikon
-}
-
 };

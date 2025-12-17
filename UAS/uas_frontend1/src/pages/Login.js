@@ -1,74 +1,91 @@
 import React, { useState } from "react";
 import axios from "axios";
 import "./Login.css";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
-  const [form, setForm] = useState({ email: "", password: "" });
+  const navigate = useNavigate();
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+  });
+
+  const [notif, setNotif] = useState(""); // NOTIF STATE
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:8000/api/login", form);
+      const res = await axios.post(
+        "http://localhost:8000/api/login",
+        form
+      );
 
       localStorage.setItem("user", JSON.stringify(res.data.user));
-      localStorage.setItem("role", res.data.user.role); // ✅ TAMBAHAN INI
+      localStorage.setItem("role", res.data.user.role);
 
-      alert(res.data.message);
-      window.location.href = "/app";
+      // TAMPILKAN NOTIF
+      setNotif("Login berhasil");
+
+      // DELAY SEBELUM PINDAH
+      setTimeout(() => {
+        navigate("/app");
+      }, 1500);
+
     } catch (err) {
-      alert("Email atau password salah!");
+      setNotif("Email atau password salah ❌");
     }
   };
 
-  return React.createElement(
-    "div",
-    { className: "login-page" },
+  return (
+    <div className="login-page">
+      {/* NOTIF */}
+      {notif && (
+        <div className="notif-overlay">
+          <div className="notif-box">
+            {notif}
+          </div>
+        </div>
+      )}
 
-    React.createElement(
-      "div",
-      { className: "login-card" },
+      <div className="login-card">
+        <h2>Login</h2>
 
-      React.createElement("h2", null, "Login"),
+        <form onSubmit={handleSubmit}>
+          <div className="input-group">
+            <label>Email</label>
+            <input
+              type="email"
+              name="email"
+              required
+              onChange={handleChange}
+            />
+          </div>
 
-      React.createElement(
-        "form",
-        { onSubmit: handleSubmit },
+          <div className="input-group">
+            <label>Password</label>
+            <input
+              type="password"
+              name="password"
+              required
+              onChange={handleChange}
+            />
+          </div>
 
-        // EMAIL
-        React.createElement(
-          "div",
-          { className: "input-group" },
-          React.createElement("label", null, "Email"),
-          React.createElement("input", {
-            type: "email",
-            name: "email",
-            required: true,
-            onChange: handleChange,
-          })
-        ),
+          <button type="submit" className="btn-login">
+            Login
+          </button>
+        </form>
 
-        // PASSWORD
-        React.createElement(
-          "div",
-          { className: "input-group" },
-          React.createElement("label", null, "Password"),
-          React.createElement("input", {
-            type: "password",
-            name: "password",
-            required: true,
-            onChange: handleChange,
-          })
-        ),
-
-        // BUTTON LOGIN
-        React.createElement("button", { type: "submit", className: "btn-login" }, "Login")
-      ),
-
-      // REGISTER LINK
-      React.createElement("p", { className: "register-text" }, "Tidak punya akun? ", React.createElement("a", { href: "/register" }, "Register"))
-    )
+        <p className="register-text">
+          Tidak punya akun? <a href="/register">Register</a>
+        </p>
+      </div>
+    </div>
   );
 }
 

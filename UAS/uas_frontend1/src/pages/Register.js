@@ -1,136 +1,100 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import bgHospital from "../Image/bg-hospital1.jpg";
+import { useNavigate } from "react-router-dom";
 
 function Register() {
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    password: "",
-  });
+  const navigate = useNavigate();
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [notif, setNotif] = useState({ message: "", type: "" });
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  // auto hide notif
+  useEffect(() => {
+    if (notif.message) {
+      const timer = setTimeout(() => setNotif({ message: "", type: "" }), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [notif]);
+
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
       const res = await axios.post("http://localhost:8000/api/register", form);
-      alert(res.data.message);
-      window.location.href = "/login";
+      setNotif({ message: res.data.message, type: "success" });
+
+      setTimeout(() => navigate("/login"), 1500);
     } catch (error) {
-      console.log(error.response?.data);
-      alert("Register gagal!");
+      let message = "Register gagal!";
+      if (error.response?.data?.errors) {
+        const errors = error.response.data.errors;
+        message = Object.values(errors)[0][0];
+      } else if (error.response?.data?.message) {
+        message = error.response.data.message;
+      }
+      setNotif({ message, type: "error" });
     }
   };
 
-  return React.createElement(
-    "div",
-    {
-      style: {
-        display: "flex",
-        minHeight: "100vh",
-        fontFamily: "Arial, sans-serif",
-      },
-    },
+  return (
+    <div style={styles.page}>
+      {/* NOTIF */}
+      {notif.message && (
+        <div style={styles.notifOverlay}>
+          <div style={{ ...styles.notifBox, backgroundColor: notif.type === "success" ? "#22c55e" : "#dc3545" }}>
+            {notif.message}
+          </div>
+        </div>
+      )}
 
-    /* ===== KIRI : GAMBAR ===== */
-    React.createElement("div", {
-      style: {
-        flex: 1,
-        backgroundImage: `url(${bgHospital})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      },
-    }),
+      {/* KIRI: GAMBAR */}
+      <div style={{ flex: 1, backgroundImage: `url(${bgHospital})`, backgroundSize: "cover", backgroundPosition: "center" }} />
 
-    /* ===== KANAN : FORM ===== */
-    React.createElement(
-      "div",
-      {
-        style: {
-          flex: 1,
-          padding: "80px 60px",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-        },
-      },
+      {/* KANAN: FORM */}
+      <div style={styles.formWrapper}>
+        <h1 style={styles.title}>Selamat Datang<br />Di Klinik</h1>
+        <p style={styles.subtitle}>Silakan isi data dibawah ini</p>
 
-      React.createElement("h1", { style: { color: "#1a0dab", marginBottom: 10 } }, "Selamat Datang", React.createElement("br"), "Di Klinik"),
+        <form onSubmit={handleSubmit}>
+          <label style={styles.label}>Username</label>
+          <input name="name" value={form.name} onChange={handleChange} style={styles.input} />
 
-      React.createElement("p", { style: { marginBottom: 30, color: "#555" } }, "Silakan isi data dibawah ini"),
+          <label style={styles.label}>Email</label>
+          <input type="email" name="email" value={form.email} onChange={handleChange} style={styles.input} />
 
-      React.createElement(
-        "form",
-        { onSubmit: handleSubmit },
+          <label style={styles.label}>Password</label>
+          <input type="password" name="password" value={form.password} onChange={handleChange} style={styles.input} />
 
-        /* USERNAME */
-        React.createElement("label", { style: labelStyle }, "Username"),
-        React.createElement("input", {
-          name: "name",
-          value: form.name,
-          onChange: handleChange,
-          style: inputStyle,
-        }),
-
-        /* EMAIL */
-        React.createElement("label", { style: labelStyle }, "Email"),
-        React.createElement("input", {
-          type: "email",
-          name: "email",
-          value: form.email,
-          onChange: handleChange,
-          style: inputStyle,
-        }),
-
-        /* PASSWORD */
-        React.createElement("label", { style: labelStyle }, "Password"),
-        React.createElement("input", {
-          type: "password",
-          name: "password",
-          value: form.password,
-          onChange: handleChange,
-          style: inputStyle,
-        }),
-
-        React.createElement(
-          "button",
-          {
-            type: "submit",
-            style: {
-              marginTop: 30,
-              padding: "12px",
-              width: "100%",
-              backgroundColor: "#0b0b6b",
-              color: "white",
-              border: "none",
-              borderRadius: 8,
-              fontSize: 16,
-              cursor: "pointer",
-            },
-          },
-          "Daftar"
-        )
-      )
-    )
+          <button type="submit" style={styles.button}>Daftar</button>
+        </form>
+      </div>
+    </div>
   );
 }
-const inputStyle = {
-  width: "100%",
-  padding: 12,
-  marginTop: 6,
-  marginBottom: 20,
-  borderRadius: 6,
-  border: "1px solid #ccc",
-  fontSize: 14,
-  backgroundColor: "#eee",
+
+// ===== STYLE =====
+const styles = {
+  page: { display: "flex", minHeight: "100vh", fontFamily: "Arial, sans-serif" },
+  formWrapper: { flex: 1, padding: "80px 60px", display: "flex", flexDirection: "column", justifyContent: "center" },
+  title: { color: "#1a0dab", marginBottom: 10 },
+  subtitle: { marginBottom: 30, color: "#555" },
+  label: { color: "#6a1b9a", fontWeight: "bold" },
+  input: { width: "100%", padding: 12, marginTop: 6, marginBottom: 20, borderRadius: 6, border: "1px solid #ccc", fontSize: 14, backgroundColor: "#eee" },
+  button: { marginTop: 30, padding: "12px", width: "100%", backgroundColor: "#0b0b6b", color: "white", border: "none", borderRadius: 8, fontSize: 16, cursor: "pointer" },
+
+  // NOTIF
+  notifOverlay: { position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 },
+  notifBox: { padding: "25px 40px", borderRadius: 12, fontSize: 18, fontWeight: 600, color: "#fff", boxShadow: "0 10px 30px rgba(0,0,0,0.25)", animation: "scaleIn 0.3s ease" },
 };
 
-const labelStyle = {
-  color: "#6a1b9a",
-  fontWeight: "bold",
-};
+// ANIMASI SCALE IN
+const styleSheet = document.styleSheets[0];
+const keyframes =
+`@keyframes scaleIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}`;
+styleSheet.insertRule(keyframes, styleSheet.cssRules.length);
+
 export default Register;
