@@ -23,7 +23,6 @@ return new class extends Migration
         $table->string('riwayat_penyakit')->nullable();
         $table->string('alergi_obat')->nullable();
         $table->string('telepon_kontak_darurat')->nullable();
-        $table->date('tanggal_periksa_terakhir')->nullable();
         $table->timestamps();
     });
 

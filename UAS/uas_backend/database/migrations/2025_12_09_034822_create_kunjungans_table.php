@@ -18,8 +18,6 @@ return new class extends Migration
         $table->text('keluhan')->nullable();
         $table->text('diagnosa')->nullable();
         $table->text('tindakan')->nullable();
-        $table->string('dokter')->nullable();
-        $table->text('catatan')->nullable();
         $table->timestamps();
     });
 
