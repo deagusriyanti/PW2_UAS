@@ -34,10 +34,21 @@ export default function TambahPasien() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!form.jenis_kelamin) {
-      showNotif("Silakan pilih jenis kelamin!");
-      return;
-    }
+     if (
+    !form.nama ||
+    !form.nik ||
+    !form.jenis_kelamin ||
+    !form.tanggal_lahir ||
+    !form.golongan_darah ||
+    !form.alamat ||
+    !form.no_telepon ||
+    !form.riwayat_penyakit ||
+    !form.alergi_obat ||
+    !form.telepon_kontak_darurat
+  ) {
+    showNotif("Semua field wajib diisi!");
+    return;
+  }
 
     try {
       const res = await api.post("/pasien", form);
@@ -72,7 +83,6 @@ export default function TambahPasien() {
     { label: "No Telepon", name: "no_telepon", type: "text" },
     { label: "Riwayat Penyakit", name: "riwayat_penyakit", type: "textarea" },
     { label: "Alergi Obat", name: "alergi_obat", type: "textarea" },
-    { label: "Nama Kontak Darurat", name: "nama_kontak_darurat", type: "text" },
     { label: "Telepon Kontak Darurat", name: "telepon_kontak_darurat", type: "text" },
   ];
 

@@ -43,7 +43,6 @@ export default function PasienDetail() {
             { label: "No Telepon", value: pasien.no_telepon },
             { label: "Riwayat Penyakit", value: pasien.riwayat_penyakit },
             { label: "Alergi Obat", value: pasien.alergi_obat },
-            { label: "Nama Kontak Darurat", value: pasien.nama_kontak_darurat },
             { label: "Telepon Kontak Darurat", value: pasien.telepon_kontak_darurat },
           ].map((item, index) => (
             <div style={styles.row} key={index}>

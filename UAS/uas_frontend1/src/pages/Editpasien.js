@@ -59,7 +59,7 @@ export default function EditPasien() {
         navigate(`/app/pasien/detail/${id}`);
       }, 1500);
     } catch (err) {
-      showNotif("Gagal memperbarui data pasien ❌");
+      showNotif("Gagal memperbarui data pasien ");
     }
   };
 
@@ -84,9 +84,8 @@ export default function EditPasien() {
     { label: "Golongan Darah", name: "golongan_darah", type: "text" },
     { label: "Alamat", name: "alamat", type: "textarea" },
     { label: "No Telepon", name: "no_telepon", type: "text" },
-    { label: "Riwayat Penyakit", name: "riwayat_penyakit", type: "textarea" },
+    { label: "Riwayat Penyakit", name: "riwayat_penyakit", type: "textarea" },   
     { label: "Alergi Obat", name: "alergi_obat", type: "textarea" },
-    { label: "Nama Kontak Darurat", name: "nama_kontak_darurat", type: "text" },
     { label: "Telepon Kontak Darurat", name: "telepon_kontak_darurat", type: "text" },
   ];
 
