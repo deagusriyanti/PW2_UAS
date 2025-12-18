@@ -1,18 +1,22 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import layoutLogo from "../Image/Layout.jpg";
-import { FaHome, FaUserInjured, FaPlus } from "react-icons/fa"; 
+import { FaHome, FaUserInjured, FaPlus, FaUsers } from "react-icons/fa";
 
 export default function Layout() {
   const location = useLocation();
-  const role = localStorage.getItem("role");
+  const [role, setRole] = useState(null); // ubah menjadi state
+
+  useEffect(() => {
+    const savedRole = localStorage.getItem("role");
+    setRole(savedRole); // ambil role dari localStorage saat render
+  }, []);
 
   const handleLogout = () => {
     localStorage.clear();
     window.location.href = "/login";
   };
 
-  // --- Perbaikan isActive ---
   const isActive = (path, exact = false) => {
     if (exact) return location.pathname === path;
     return location.pathname.startsWith(path);
@@ -61,6 +65,18 @@ export default function Layout() {
                 >
                   <span style={styles.iconCircle}><FaPlus /></span>
                   Tambah Pasien
+                </Link>
+              </li>
+            )}
+
+            {role === "admin" && (
+              <li style={styles.menuItem}>
+                <Link
+                  to="manajemen-akun"
+                  style={isActive("/manajemen-akun", true) ? { ...styles.menuLink, ...styles.activeMenu } : styles.menuLink}
+                >
+                  <span style={styles.iconCircle}><FaUsers /></span>
+                  Manajemen Akun
                 </Link>
               </li>
             )}

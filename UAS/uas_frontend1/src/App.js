@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
 import Layout from "./pages/Layout";
 import Welcome from "./pages/Welcome";
@@ -17,82 +17,57 @@ import EditKunjungan from "./pages/EditKunjungan";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 
+import ManajemenAkun from "./pages/ManajemenAkun";
+
+// --- AdminRoute Wrapper ---
+function AdminRoute({ children }) {
+  const role = localStorage.getItem("role");
+  if (role !== "admin") {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+}
+
 function App() {
-  return React.createElement(
-    Router,
-    null,
-    React.createElement(
-      Routes,
-      null,
+  return (
+    <Router>
+      <Routes>
+        {/* 🔹 Login & Register */}
+        <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
-      // 🔹 Login & Register
-      React.createElement(Route, {
-        path: "/",
-        element: React.createElement(Login),
-      }),
-      React.createElement(Route, {
-        path: "/login",
-        element: React.createElement(Login),
-      }),
-      React.createElement(Route, {
-        path: "/register",
-        element: React.createElement(Register),
-      }),
+        {/* 🔹 Area utama (pakai Layout) */}
+        <Route path="/app" element={<Layout />}>
+          {/* default /app */}
+          <Route index element={<Welcome />} />
 
-      // 🔹 Area utama (pakai Layout)
-      React.createElement(
-        Route,
-        {
-          path: "/app",
-          element: React.createElement(Layout),
-        },
-        [
-          // ⬇️ default /app
-          React.createElement(Route, {
-            index: true,
-            element: React.createElement(Welcome),
-          }),
+          {/* Dashboard */}
+          <Route path="dashboard" element={<Dashboard />} />
 
-          // Dashboard
-          React.createElement(Route, {
-            path: "dashboard",
-            element: React.createElement(Dashboard),
-          }),
+          {/* Pasien */}
+          <Route path="pasien" element={<PasienList />} />
+          <Route path="pasien/tambah" element={<PasienForm />} />
+          <Route path="pasien/detail/:id" element={<PasienDetail />} />
+          <Route path="pasien/edit/:id" element={<EditPasien />} />
 
-          // Pasien
-          React.createElement(Route, {
-            path: "pasien",
-            element: React.createElement(PasienList),
-          }),
-          React.createElement(Route, {
-            path: "pasien/tambah",
-            element: React.createElement(PasienForm),
-          }),
-          React.createElement(Route, {
-            path: "pasien/detail/:id",
-            element: React.createElement(PasienDetail),
-          }),
-          React.createElement(Route, {
-            path: "pasien/edit/:id",
-            element: React.createElement(EditPasien),
-          }),
+          {/* Kunjungan */}
+          <Route path="pasien/:id/kunjungan" element={<KunjunganList />} />
+          <Route path="pasien/:id/kunjungan/tambah" element={<KunjunganForm />} />
+          <Route path="pasien/:id/kunjungan/edit/:kunjunganId" element={<EditKunjungan />} />
 
-          // Kunjungan
-          React.createElement(Route, {
-            path: "pasien/:id/kunjungan",
-            element: React.createElement(KunjunganList),
-          }),
-          React.createElement(Route, {
-            path: "pasien/:id/kunjungan/tambah",
-            element: React.createElement(KunjunganForm),
-          }),
-          React.createElement(Route, {
-            path: "pasien/:id/kunjungan/edit/:kunjunganId",
-            element: React.createElement(EditKunjungan),
-          }),
-        ]
-      )
-    )
+          {/* Manajemen Akun (hanya admin) */}
+          <Route
+            path="manajemen-akun"
+            element={
+              <AdminRoute>
+                <ManajemenAkun />
+              </AdminRoute>
+            }
+          />
+        </Route>
+      </Routes>
+    </Router>
   );
 }
 

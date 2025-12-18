@@ -24,9 +24,7 @@ class PasienController extends Controller
             'no_telepon' => 'nullable|string',
             'riwayat_penyakit' => 'nullable|string',
             'alergi_obat' => 'nullable|string',
-            'nama_kontak_darurat' => 'nullable|string',
-            'telepon_kontak_darurat' => 'nullable|string',
-            'tanggal_periksa_terakhir' => 'nullable|date'
+            'telepon_kontak_darurat' => 'nullable|string'
         ]);
 
         $pasien = Pasien::create($data);
@@ -57,8 +55,7 @@ class PasienController extends Controller
             'no_telepon' => 'nullable|string',
             'riwayat_penyakit' => 'nullable|string',
             'alergi_obat' => 'nullable|string',
-            'telepon_kontak_darurat' => 'nullable|string',
-            'tanggal_periksa_terakhir' => 'nullable|date'
+            'telepon_kontak_darurat' => 'nullable|string'
         ]);
 
         $pasien->update($data);

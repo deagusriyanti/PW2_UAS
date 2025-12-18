@@ -4,15 +4,18 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PasienController;
 use App\Http\Controllers\KunjunganController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UserController;
 
 
 
-Route::get('/kunjungan', [KunjunganController::class, 'index']);
 
+Route::get('/users', [UserController::class, 'index']);
+Route::patch('/users/{id}/role', [UserController::class, 'updateRole']);
+Route::delete('/users/{id}', [UserController::class, 'destroy']);
 // CRUD pasien
 Route::apiResource('pasien', PasienController::class);
-
-// Kunjungan
+// Kunjungan pasien
+Route::get('/kunjungan', [KunjunganController::class, 'index']);
 Route::get('/pasien/{id}/kunjungan', [KunjunganController::class, 'index']);
 Route::post('/pasien/{id}/kunjungan', [KunjunganController::class, 'store']);
 // GET satu kunjungan pasien

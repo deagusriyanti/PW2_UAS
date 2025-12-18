@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axiosClient from "../api/axiosClient";
 import { Link } from "react-router-dom";
-import { VscSearch, VscOrganization } from "react-icons/vsc";
+import { FaHospitalUser } from "react-icons/fa";
+import { VscSearch } from "react-icons/vsc";
 
 export default function PasienList() {
   const [pasiens, setPasiens] = useState([]);
@@ -26,18 +27,13 @@ export default function PasienList() {
   const confirmDelete = async () => {
     try {
       await axiosClient.delete("/pasien/" + selectedId);
-
       setPasiens(pasiens.filter((p) => p.id !== selectedId));
-
       setShowConfirm(false);
-      setNotif("Data pasien berhasil dihapus ");
-
-      setTimeout(() => {
-        setNotif("");
-      }, 1500);
+      setNotif("Data pasien berhasil dihapus");
+      setTimeout(() => setNotif(""), 1500);
     } catch (err) {
       setShowConfirm(false);
-      setNotif("Gagal menghapus data ");
+      setNotif("Gagal menghapus data");
     }
   };
 
@@ -67,23 +63,25 @@ export default function PasienList() {
         </div>
       )}
 
-      <h1 style={styles.title}>
-        <VscOrganization style={styles.titleIcon} /> Data Pasien
-      </h1>
+      {/* HEADER TITLE + SEARCH */}
+      <div style={styles.headerRow}>
+        <h1 style={styles.title}>
+          <FaHospitalUser style={styles.titleIcon} /> Data Pasien
+        </h1>
 
-      {/* SEARCH */}
-      <div style={styles.searchWrapper}>
-        <div style={styles.searchBox}>
-          <div style={styles.iconCircle}>
-            <VscSearch style={styles.searchIcon} />
+        <div style={styles.searchWrapper}>
+          <div style={styles.searchBox}>
+            <div style={styles.iconCircle}>
+              <VscSearch style={styles.searchIcon} />
+            </div>
+            <input
+              type="text"
+              placeholder="Cari pasien berdasarkan nama atau NIK..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              style={styles.searchInput}
+            />
           </div>
-          <input
-            type="text"
-            placeholder="Cari pasien berdasarkan nama atau NIK..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            style={styles.searchInput}
-          />
         </div>
       </div>
 
@@ -124,7 +122,10 @@ export default function PasienList() {
                   <td style={styles.td}>{p.alamat}</td>
                   <td style={styles.td}>{p.no_telepon}</td>
                   <td style={styles.td}>
-                    <Link style={styles.detailBtn} to={`/app/pasien/detail/${p.id}`}>
+                    <Link
+                      style={styles.detailBtn}
+                      to={`/app/pasien/detail/${p.id}`}
+                    >
                       Detail
                     </Link>
 
@@ -206,37 +207,43 @@ const deleteBtnModal = {
 const styles = {
   wrapper: {
     padding: "15px",
-    fontFamily: "Arial, sans-serif",
+    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+  },
+  headerRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "30px",
+    width: "100%",
   },
   title: {
-    textAlign: "center",
     fontSize: "32px",
     fontWeight: "700",
-    marginBottom: "50px",
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
     background: "linear-gradient(90deg, #078368, #17a2b8)",
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",
-    display: "inline-flex",
-    alignItems: "center",
-    gap: "10px",
   },
   titleIcon: {
-    fontSize: "32px",
+    fontSize: "36px",
     color: "#078368",
   },
   searchWrapper: {
-    marginBottom: "20px",
+    flex: 1,
     display: "flex",
-    justifyContent: "center",
+    justifyContent: "flex-end",
+    marginLeft: "20px",
   },
   searchBox: {
     display: "flex",
     alignItems: "center",
-    width: "100%",
-    maxWidth: "600px",
+    flex: 1,
+    maxWidth: "900px",
     background: "#fff",
     borderRadius: "12px",
-    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
     padding: "5px 10px",
   },
   iconCircle: {

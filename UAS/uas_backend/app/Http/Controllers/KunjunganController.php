@@ -25,8 +25,6 @@ class KunjunganController extends Controller
             'keluhan' => $request->keluhan,
             'diagnosa' => $request->diagnosa,
             'tindakan' => $request->tindakan,
-            'dokter' => $request->dokter,
-            'catatan' => $request->catatan,
         ]);
 
         return response()->json($kunjungan, 201);

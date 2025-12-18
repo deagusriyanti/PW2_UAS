@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./Login.css";
 import { useNavigate } from "react-router-dom";
@@ -23,32 +23,38 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post(
-        "http://localhost:8000/api/login",
-        form
-      );
+      const res = await axios.post("http://localhost:8000/api/login", form);
 
+      // Simpan user & role di localStorage
       localStorage.setItem("user", JSON.stringify(res.data.user));
       localStorage.setItem("role", res.data.user.role);
 
       // TAMPILKAN NOTIF SUKSES
       setNotif("Login berhasil");
 
-      // DELAY SEBELUM PINDAH
+      // Redirect ke /app setelah delay
       setTimeout(() => {
         navigate("/app");
-      }, 1500);
+      }, 500);
 
     } catch (err) {
       // TAMPILKAN NOTIF ERROR
-      setNotif("Email atau password salah ");
+      setNotif("Email atau password salah");
 
-      // HILANGKAN NOTIF OTOMATIS SETELAH 2 DETIK
+      // HILANGKAN NOTIF OTOMATIS
       setTimeout(() => {
         setNotif("");
       }, 500);
     }
   };
+
+  // Redirect otomatis jika user sudah login sebelumnya
+  useEffect(() => {
+    const savedUser = localStorage.getItem("user");
+    if (savedUser) {
+      navigate("/app");
+    }
+  }, [navigate]);
 
   return (
     <div className="login-page">

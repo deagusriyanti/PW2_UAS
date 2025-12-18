@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import bgHospital from "../Image/bg-hospital1.jpg";
 import { useNavigate } from "react-router-dom";
+import { FaArrowLeft } from "react-icons/fa";
 
 function Register() {
   const navigate = useNavigate();
@@ -23,7 +24,6 @@ function Register() {
     try {
       const res = await axios.post("http://localhost:8000/api/register", form);
       setNotif({ message: res.data.message, type: "success" });
-
       setTimeout(() => navigate("/login"), 1500);
     } catch (error) {
       let message = "Register gagal!";
@@ -42,18 +42,39 @@ function Register() {
       {/* NOTIF */}
       {notif.message && (
         <div style={styles.notifOverlay}>
-          <div style={{ ...styles.notifBox, backgroundColor: notif.type === "success" ? "#22c55e" : "#dc3545" }}>
+          <div
+            style={{
+              ...styles.notifBox,
+              backgroundColor: notif.type === "success" ? "#22c55e" : "#dc3545",
+            }}
+          >
             {notif.message}
           </div>
         </div>
       )}
 
       {/* KIRI: GAMBAR */}
-      <div style={{ flex: 1, backgroundImage: `url(${bgHospital})`, backgroundSize: "cover", backgroundPosition: "center" }} />
+      <div
+        style={{
+          flex: 1,
+          backgroundImage: `url(${bgHospital})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      />
 
       {/* KANAN: FORM */}
       <div style={styles.formWrapper}>
-        <h1 style={styles.title}>Selamat Datang<br />Di Klinik</h1>
+        {/* Tombol icon panah */}
+        <div style={styles.backIconWrapper} onClick={() => navigate("/login")}>
+          <FaArrowLeft style={styles.backIcon} />
+        </div>
+
+        <h1 style={styles.title}>
+          Selamat Datang
+          <br />
+           Silakan Registrasi 
+        </h1>
         <p style={styles.subtitle}>Silakan isi data dibawah ini</p>
 
         <form onSubmit={handleSubmit}>
@@ -76,7 +97,27 @@ function Register() {
 // ===== STYLE =====
 const styles = {
   page: { display: "flex", minHeight: "100vh", fontFamily: "Arial, sans-serif" },
-  formWrapper: { flex: 1, padding: "80px 60px", display: "flex", flexDirection: "column", justifyContent: "center" },
+  formWrapper: { flex: 1, padding: "80px 60px", display: "flex", flexDirection: "column", justifyContent: "center", position: "relative" },
+  
+  backIconWrapper: {
+    position: "absolute",
+    top: 20,
+    left: 20,
+    width: 40,
+    height: 40,
+    borderRadius: "50%",
+    backgroundColor: "#0b0b6b",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    transition: "all 0.2s",
+  },
+  backIcon: {
+    color: "#fff",
+    fontSize: 18,
+  },
+  
   title: { color: "#1a0dab", marginBottom: 10 },
   subtitle: { marginBottom: 30, color: "#555" },
   label: { color: "#6a1b9a", fontWeight: "bold" },
