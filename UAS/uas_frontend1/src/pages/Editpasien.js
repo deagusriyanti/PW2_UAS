@@ -23,6 +23,7 @@ export default function EditPasien() {
 
   const [form, setForm] = useState(initialForm);
   const [focusField, setFocusField] = useState("");
+  const [notif, setNotif] = useState("");
 
   useEffect(() => {
     api.get(`/pasien/${id}`).then((res) => {
@@ -35,25 +36,35 @@ export default function EditPasien() {
     setForm({ ...form, [name]: value });
   };
 
+  const showNotif = (message) => {
+    setNotif(message);
+    setTimeout(() => {
+      setNotif("");
+    }, 1500);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!form.jenis_kelamin) {
-      alert("Silakan pilih jenis kelamin!");
+      showNotif("Silakan pilih jenis kelamin ❗");
       return;
     }
 
     try {
-      const res = await api.put(`/pasien/${id}`, form);
-      alert(res.data.message);
-      navigate(`/app/pasien/detail/${id}`); // arah ke halaman detail
+      await api.put(`/pasien/${id}`, form);
+      showNotif("Data pasien berhasil diperbarui");
+
+      setTimeout(() => {
+        navigate(`/app/pasien/detail/${id}`);
+      }, 1500);
     } catch (err) {
-      console.log(err.response?.data);
-      alert("Gagal memperbarui data pasien");
+      showNotif("Gagal memperbarui data pasien ❌");
     }
   };
 
   const handleCancel = () => {
-    navigate(`/app/pasien/detail/${id}`); // tombol batal ke detail
+    navigate(`/app/pasien/detail/${id}`);
   };
 
   const fields = [
@@ -80,76 +91,120 @@ export default function EditPasien() {
   ];
 
   return (
-    <form onSubmit={handleSubmit} style={styles.form}>
-      <div style={styles.titleBox}>
-        <FaUserEdit style={styles.titleIcon} />
-        <h2 style={styles.title}>Edit Data Pasien</h2>
-        <button type="button" style={styles.cancelBtnHeader} onClick={handleCancel}>
-          Batal
-        </button>
-      </div>
-
-      {fields.map((field) => (
-        <div key={field.name} style={styles.fieldWrapper}>
-          <label style={styles.label}>{field.label}</label>
-          {field.type === "textarea" ? (
-            <textarea
-              name={field.name}
-              value={form[field.name]}
-              onChange={handleChange}
-              style={{
-                ...styles.inputArea,
-                ...(focusField === field.name ? styles.inputFocus : {}),
-              }}
-              onFocus={() => setFocusField(field.name)}
-              onBlur={() => setFocusField("")}
-            />
-          ) : field.type === "select" ? (
-            <select
-              name={field.name}
-              value={form[field.name]}
-              onChange={handleChange}
-              style={{
-                ...styles.input,
-                ...(focusField === field.name ? styles.inputFocus : {}),
-              }}
-              onFocus={() => setFocusField(field.name)}
-              onBlur={() => setFocusField("")}
-            >
-              {field.options.map((opt) => (
-                <option key={opt.value} value={opt.value} disabled={opt.value === ""}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <input
-              type={field.type}
-              name={field.name}
-              value={form[field.name]}
-              onChange={handleChange}
-              style={{
-                ...styles.input,
-                ...(focusField === field.name ? styles.inputFocus : {}),
-              }}
-              onFocus={() => setFocusField(field.name)}
-              onBlur={() => setFocusField("")}
-            />
-          )}
+    <>
+      {/* NOTIF */}
+      {notif && (
+        <div style={overlayStyle}>
+          <div style={notifBoxStyle}>{notif}</div>
         </div>
-      ))}
+      )}
 
-      <div style={{ display: "flex", gap: "15px", marginTop: "20px" }}>
-        <button type="submit" style={styles.submitBtn}>
-          Simpan Perubahan
-        </button>
-        <button type="button" style={styles.cancelBtn} onClick={handleCancel}>
-          Batal
-        </button>
-      </div>
-    </form>
+      <form onSubmit={handleSubmit} style={styles.form}>
+        <div style={styles.titleBox}>
+          <FaUserEdit style={styles.titleIcon} />
+          <h2 style={styles.title}>Edit Data Pasien</h2>
+          <button
+            type="button"
+            style={styles.cancelBtnHeader}
+            onClick={handleCancel}
+          >
+            Batal
+          </button>
+        </div>
+
+        {fields.map((field) => (
+          <div key={field.name} style={styles.fieldWrapper}>
+            <label style={styles.label}>{field.label}</label>
+
+            {field.type === "textarea" ? (
+              <textarea
+                name={field.name}
+                value={form[field.name]}
+                onChange={handleChange}
+                style={{
+                  ...styles.inputArea,
+                  ...(focusField === field.name ? styles.inputFocus : {}),
+                }}
+                onFocus={() => setFocusField(field.name)}
+                onBlur={() => setFocusField("")}
+              />
+            ) : field.type === "select" ? (
+              <select
+                name={field.name}
+                value={form[field.name]}
+                onChange={handleChange}
+                style={{
+                  ...styles.input,
+                  ...(focusField === field.name ? styles.inputFocus : {}),
+                }}
+                onFocus={() => setFocusField(field.name)}
+                onBlur={() => setFocusField("")}
+              >
+                {field.options.map((opt) => (
+                  <option
+                    key={opt.value}
+                    value={opt.value}
+                    disabled={opt.value === ""}
+                  >
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type={field.type}
+                name={field.name}
+                value={form[field.name]}
+                onChange={handleChange}
+                style={{
+                  ...styles.input,
+                  ...(focusField === field.name ? styles.inputFocus : {}),
+                }}
+                onFocus={() => setFocusField(field.name)}
+                onBlur={() => setFocusField("")}
+              />
+            )}
+          </div>
+        ))}
+
+        <div style={{ display: "flex", gap: "15px", marginTop: "20px" }}>
+          <button type="submit" style={styles.submitBtn}>
+            Simpan Perubahan
+          </button>
+          <button type="button" style={styles.cancelBtn} onClick={handleCancel}>
+            Batal
+          </button>
+        </div>
+      </form>
+    </>
   );
 }
+
+/* ================= NOTIF STYLE ================= */
+
+const overlayStyle = {
+  position: "fixed",
+  top: 0,
+  left: 0,
+  width: "100vw",
+  height: "100vh",
+  background: "rgba(0,0,0,0.5)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  zIndex: 9999,
+};
+
+const notifBoxStyle = {
+  background: "#fff",
+  padding: "20px 30px",
+  borderRadius: "12px",
+  fontSize: "16px",
+  fontWeight: "600",
+  textAlign: "center",
+};
+
+/* ================= FORM STYLES ================= */
 
 const styles = {
   form: {
@@ -162,15 +217,13 @@ const styles = {
     fontFamily: "Arial, sans-serif",
     boxSizing: "border-box",
     overflowY: "auto",
-    scrollbarWidth: "none",
-    msOverflowStyle: "none",
   },
 
   titleBox: {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    background: "linear-gradient(180deg, #078368ff, #06352d)",
+    background: "linear-gradient(180deg, #078368, #06352d)",
     padding: "15px 20px",
     borderRadius: "12px",
     marginBottom: "25px",
@@ -178,7 +231,6 @@ const styles = {
   },
 
   titleIcon: {
-    marginRight: "12px",
     fontSize: "24px",
   },
 
@@ -192,7 +244,7 @@ const styles = {
     padding: "8px 16px",
     borderRadius: "8px",
     border: "none",
-    background: "#7e0707ff",
+    background: "#7e0707",
     color: "#fff",
     cursor: "pointer",
     fontWeight: "600",
@@ -211,27 +263,21 @@ const styles = {
   },
 
   input: {
-    width: "100%",
     padding: "16px",
     borderRadius: "12px",
     border: "1px solid #ccc",
     fontSize: "15px",
-    boxSizing: "border-box",
     background: "#f9f9f9",
-    transition: "all 0.2s",
   },
 
   inputArea: {
-    width: "100%",
     padding: "16px",
     borderRadius: "12px",
     border: "1px solid #ccc",
     fontSize: "15px",
     minHeight: "90px",
-    boxSizing: "border-box",
     background: "#f9f9f9",
     resize: "none",
-    transition: "all 0.2s",
   },
 
   inputFocus: {
@@ -250,7 +296,6 @@ const styles = {
     fontSize: "17px",
     fontWeight: "700",
     cursor: "pointer",
-    transition: "0.3s",
   },
 
   cancelBtn: {
@@ -258,11 +303,10 @@ const styles = {
     padding: "16px",
     borderRadius: "12px",
     border: "none",
-    background: "#7e0707ff",
+    background: "#7e0707",
     color: "#fff",
     fontSize: "17px",
     fontWeight: "700",
     cursor: "pointer",
-    transition: "0.3s",
   },
 };

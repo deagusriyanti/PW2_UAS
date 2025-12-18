@@ -19,27 +19,37 @@ export default function TambahPasien() {
 
   const [form, setForm] = useState(initialForm);
   const [focusField, setFocusField] = useState("");
+  const [notif, setNotif] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
   };
 
+  const showNotif = (message) => {
+    setNotif(message);
+    setTimeout(() => setNotif(""), 1000);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!form.jenis_kelamin) {
-      alert("Silakan pilih jenis kelamin!");
+      showNotif("Silakan pilih jenis kelamin!");
       return;
     }
 
     try {
       const res = await api.post("/pasien", form);
-      alert(res.data.message);
-      setForm(initialForm); // reset form setelah berhasil
+
+      // Tampilkan notif sukses hanya sekali
+      const message = res.data?.message || "Data pasien berhasil ditambahkan!";
+      showNotif(message);
+
+      setForm(initialForm); 
     } catch (err) {
       console.log(err.response?.data);
-      alert("Gagal menambah data pasien");
+      showNotif("Gagal menambah data pasien");
     }
   };
 
@@ -67,64 +77,93 @@ export default function TambahPasien() {
   ];
 
   return (
-    <form onSubmit={handleSubmit} style={styles.form}>
-      <div style={styles.titleBox}>
-        <FaUserPlus style={styles.titleIcon} />
-        <h2 style={styles.title}>Tambah Data Pasien</h2>
-      </div>
-
-      {fields.map((field) => (
-        <div key={field.name} style={styles.fieldWrapper}>
-          <label style={styles.label}>{field.label}</label>
-          {field.type === "textarea" ? (
-            <textarea
-              name={field.name}
-              value={form[field.name]}
-              onChange={handleChange}
-              style={{
-                ...styles.inputArea,
-                ...(focusField === field.name ? styles.inputFocus : {}),
-              }}
-              onFocus={() => setFocusField(field.name)}
-              onBlur={() => setFocusField("")}
-            />
-          ) : field.type === "select" ? (
-            <select
-              name={field.name}
-              value={form[field.name]}
-              onChange={handleChange}
-              style={{
-                ...styles.input,
-                ...(focusField === field.name ? styles.inputFocus : {}),
-              }}
-              onFocus={() => setFocusField(field.name)}
-              onBlur={() => setFocusField("")}
-            >
-              {field.options.map((opt) => (
-                <option key={opt.value} value={opt.value} disabled={opt.value === ""}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <input
-              type={field.type}
-              name={field.name}
-              value={form[field.name]}
-              onChange={handleChange}
-              style={{
-                ...styles.input,
-                ...(focusField === field.name ? styles.inputFocus : {}),
-              }}
-              onFocus={() => setFocusField(field.name)}
-              onBlur={() => setFocusField("")}
-            />
-          )}
+    <>
+      {/* NOTIF TENGAH */}
+      {notif && (
+        <div style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          background: "rgba(0,0,0,0.5)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 9999,
+        }}>
+          <div style={{
+            background: "#fff",
+            padding: "20px 30px",
+            borderRadius: "12px",
+            fontSize: "16px",
+            fontWeight: "600",
+            textAlign: "center",
+          }}>
+            {notif}
+          </div>
         </div>
-      ))}
+      )}
 
-      <button type="submit" style={styles.submitBtn}>Simpan</button>
-    </form>
+      <form onSubmit={handleSubmit} style={styles.form}>
+        <div style={styles.titleBox}>
+          <FaUserPlus style={styles.titleIcon} />
+          <h2 style={styles.title}>Tambah Data Pasien</h2>
+        </div>
+
+        {fields.map((field) => (
+          <div key={field.name} style={styles.fieldWrapper}>
+            <label style={styles.label}>{field.label}</label>
+            {field.type === "textarea" ? (
+              <textarea
+                name={field.name}
+                value={form[field.name]}
+                onChange={handleChange}
+                style={{
+                  ...styles.inputArea,
+                  ...(focusField === field.name ? styles.inputFocus : {}),
+                }}
+                onFocus={() => setFocusField(field.name)}
+                onBlur={() => setFocusField("")}
+              />
+            ) : field.type === "select" ? (
+              <select
+                name={field.name}
+                value={form[field.name]}
+                onChange={handleChange}
+                style={{
+                  ...styles.input,
+                  ...(focusField === field.name ? styles.inputFocus : {}),
+                }}
+                onFocus={() => setFocusField(field.name)}
+                onBlur={() => setFocusField("")}
+              >
+                {field.options.map((opt) => (
+                  <option key={opt.value} value={opt.value} disabled={opt.value === ""}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type={field.type}
+                name={field.name}
+                value={form[field.name]}
+                onChange={handleChange}
+                style={{
+                  ...styles.input,
+                  ...(focusField === field.name ? styles.inputFocus : {}),
+                }}
+                onFocus={() => setFocusField(field.name)}
+                onBlur={() => setFocusField("")}
+              />
+            )}
+          </div>
+        ))}
+
+        <button type="submit" style={styles.submitBtn}>Simpan</button>
+      </form>
+    </>
   );
 }
 

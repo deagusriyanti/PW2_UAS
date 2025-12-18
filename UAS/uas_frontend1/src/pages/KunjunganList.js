@@ -3,112 +3,220 @@ import axiosClient from "../api/axiosClient";
 import { useNavigate, useParams } from "react-router-dom";
 
 export default function KunjunganList() {
-  const { id } = useParams(); // id pasien
+  const { id } = useParams();
   const navigate = useNavigate();
+
   const [items, setItems] = useState([]);
+  const [notif, setNotif] = useState("");
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
+
   const role = localStorage.getItem("role");
 
   useEffect(() => {
-    const fetchKunjungan = async () => {
-      try {
-        const res = await axiosClient.get(`/pasien/${id}/kunjungan`);
-        if (res.data && Array.isArray(res.data)) {
-          const sorted = res.data.sort(
-            (a, b) => new Date(b.tanggal_kunjungan) - new Date(a.tanggal_kunjungan)
-          );
-          setItems(sorted);
-        } else {
-          setItems([]);
-        }
-      } catch (err) {
-        console.error("Gagal fetch kunjungan:", err.response || err.message);
-        alert("Gagal mengambil data kunjungan");
-      }
-    };
     fetchKunjungan();
   }, [id]);
 
-  const handleDelete = async (kunjunganId) => {
-    if (window.confirm("Apakah Anda yakin ingin menghapus data ini?")) {
-      try {
-        await axiosClient.delete(`/pasien/${id}/kunjungan/${kunjunganId}`);
-        alert("Data berhasil dihapus!");
-        const res = await axiosClient.get(`/pasien/${id}/kunjungan`);
-        setItems(res.data || []);
-      } catch (err) {
-        console.error("Gagal menghapus kunjungan:", err.response || err.message);
-        alert("Gagal menghapus data!");
-      }
+  const fetchKunjungan = async () => {
+    try {
+      const res = await axiosClient.get(`/pasien/${id}/kunjungan`);
+      const data = Array.isArray(res.data) ? res.data : [];
+      const sorted = data.sort(
+        (a, b) =>
+          new Date(b.tanggal_kunjungan) - new Date(a.tanggal_kunjungan)
+      );
+      setItems(sorted);
+    } catch (err) {
+      // ❗ jangan tampilkan notif error di sini
+      console.warn("Fetch kunjungan gagal");
+    }
+  };
+
+  const showNotif = (message) => {
+    setNotif(message);
+    setTimeout(() => setNotif(""), 1500);
+  };
+
+  const openDeleteConfirm = (kunjunganId) => {
+    setSelectedId(kunjunganId);
+    setShowConfirm(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await axiosClient.delete(
+        `/pasien/${id}/kunjungan/${selectedId}`
+      );
+
+      // ✅ HAPUS LANGSUNG DARI STATE (INI KUNCI UTAMA)
+      setItems((prev) => prev.filter((k) => k.id !== selectedId));
+
+      setShowConfirm(false);
+      showNotif("Data kunjungan berhasil dihapus");
+    } catch (err) {
+      setShowConfirm(false);
+      showNotif("Gagal menghapus data ");
     }
   };
 
   return (
-    <div style={styles.wrapper}>
-      <button
-        style={styles.backBtn}
-        onClick={() => navigate(`/app/pasien/detail/${id}`)}
-      >
-        &larr; Kembali
-      </button>
+    <>
+      {/* NOTIF */}
+      {notif && (
+        <div style={overlayStyle}>
+          <div style={notifBoxStyle}>{notif}</div>
+        </div>
+      )}
 
-      {/* Judul dan total kunjungan */}
-      <div style={styles.header}>
-        <h2 style={styles.title}>Riwayat Pemeriksaan</h2>
-        <p style={styles.total}>Total Kunjungan: {items.length}</p>
-      </div>
+      {/* KONFIRMASI DELETE */}
+      {showConfirm && (
+        <div style={overlayStyle}>
+          <div style={confirmBoxStyle}>
+            <p>Yakin ingin menghapus data kunjungan ini?</p>
+            <div style={{ marginTop: "15px" }}>
+              <button
+                style={cancelBtn}
+                onClick={() => setShowConfirm(false)}
+              >
+                Batal
+              </button>
+              <button
+                style={deleteBtnModal}
+                onClick={confirmDelete}
+              >
+                Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
-      <div style={styles.tableScroll}>
-        <table style={styles.table}>
-          <thead>
-            <tr>
-              <th style={styles.th}>Tanggal</th>
-              <th style={styles.th}>Keluhan</th>
-              <th style={styles.th}>Diagnosa</th>
-              <th style={styles.th}>Tindakan</th>
-              {role === "admin" && <th style={styles.th}>Aksi</th>}
-            </tr>
-          </thead>
-          <tbody>
-            {items.length > 0 ? (
-              items.map((k, index) => (
-                <tr key={k.id} style={index % 2 === 0 ? styles.trEven : styles.trOdd}>
-                  <td style={styles.td}>{k.tanggal_kunjungan}</td>
-                  <td style={styles.td}>{k.keluhan}</td>
-                  <td style={styles.td}>{k.diagnosa}</td>
-                  <td style={styles.td}>{k.tindakan}</td>
-                  {role === "admin" && (
-                    <td style={styles.td}>
-                      <button
-                        style={styles.editBtn}
-                        onClick={() =>
-                          navigate(`/app/pasien/${id}/kunjungan/edit/${k.id}`)
-                        }
-                      >
-                        Edit
-                      </button>
-                      <button
-                        style={styles.deleteBtn}
-                        onClick={() => handleDelete(k.id)}
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  )}
-                </tr>
-              ))
-            ) : (
+      <div style={styles.wrapper}>
+        <button
+          style={styles.backBtn}
+          onClick={() => navigate(`/app/pasien/detail/${id}`)}
+        >
+          &larr; Kembali
+        </button>
+
+        <div style={styles.header}>
+          <h2 style={styles.title}>Riwayat Pemeriksaan</h2>
+          <p style={styles.total}>Total Kunjungan: {items.length}</p>
+        </div>
+
+        <div style={styles.tableScroll}>
+          <table style={styles.table}>
+            <thead>
               <tr>
-                <td colSpan={role === "admin" ? 5 : 4} style={styles.noData}>
-                  Belum ada data kunjungan
-                </td>
+                <th style={styles.th}>Tanggal</th>
+                <th style={styles.th}>Keluhan</th>
+                <th style={styles.th}>Diagnosa</th>
+                <th style={styles.th}>Tindakan</th>
+                {role === "admin" && <th style={styles.th}>Aksi</th>}
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {items.length > 0 ? (
+                items.map((k, index) => (
+                  <tr
+                    key={k.id}
+                    style={index % 2 === 0 ? styles.trEven : styles.trOdd}
+                  >
+                    <td style={styles.td}>{k.tanggal_kunjungan}</td>
+                    <td style={styles.td}>{k.keluhan}</td>
+                    <td style={styles.td}>{k.diagnosa}</td>
+                    <td style={styles.td}>{k.tindakan}</td>
+
+                    {role === "admin" && (
+                      <td style={styles.td}>
+                        <button
+                          style={styles.editBtn}
+                          onClick={() =>
+                            navigate(
+                              `/app/pasien/${id}/kunjungan/edit/${k.id}`
+                            )
+                          }
+                        >
+                          Edit
+                        </button>
+                        <button
+                          style={styles.deleteBtn}
+                          onClick={() => openDeleteConfirm(k.id)}
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    )}
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td
+                    colSpan={role === "admin" ? 5 : 4}
+                    style={styles.noData}
+                  >
+                    Belum ada data kunjungan
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
+
+/* ================= MODAL & NOTIF STYLE ================= */
+
+const overlayStyle = {
+  position: "fixed",
+  top: 0,
+  left: 0,
+  width: "100vw",
+  height: "100vh",
+  background: "rgba(0,0,0,0.5)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  zIndex: 9999,
+};
+
+const notifBoxStyle = {
+  background: "#fff",
+  padding: "20px 30px",
+  borderRadius: "12px",
+  fontSize: "16px",
+  fontWeight: "600",
+  textAlign: "center",
+};
+
+const confirmBoxStyle = {
+  background: "#fff",
+  padding: "25px",
+  borderRadius: "12px",
+  textAlign: "center",
+  maxWidth: "300px",
+};
+
+const cancelBtn = {
+  padding: "6px 14px",
+  marginRight: "10px",
+  borderRadius: "8px",
+  border: "none",
+  cursor: "pointer",
+};
+
+const deleteBtnModal = {
+  padding: "6px 14px",
+  borderRadius: "8px",
+  border: "none",
+  background: "#dc3545",
+  color: "#fff",
+  cursor: "pointer",
+};
+
+/* ================= TABLE STYLE ================= */
 
 const styles = {
   wrapper: {
@@ -127,7 +235,6 @@ const styles = {
     fontSize: "24px",
     fontWeight: "700",
     color: "#083b34",
-    margin: 0,
   },
   total: {
     fontSize: "16px",
@@ -138,11 +245,10 @@ const styles = {
     padding: "10px 20px",
     borderRadius: "12px",
     border: "none",
-    background: "#42929eff",
+    background: "#42929e",
     color: "#fff",
     fontWeight: "600",
     cursor: "pointer",
-    transition: "0.3s",
     marginBottom: "20px",
   },
   tableScroll: {
@@ -153,40 +259,38 @@ const styles = {
   },
   table: {
     width: "100%",
-    borderCollapse: "separate",
-    borderSpacing: "0",
     minWidth: "700px",
+    borderCollapse: "separate",
   },
   th: {
-    position: "sticky",
-    top: 0,
-    background: "linear-gradient(90deg, #078368ff, #06352d)",
+    background: "linear-gradient(90deg, #078368, #06352d)",
     color: "#fff",
-    fontWeight: "700",
-    padding: "14px 12px",
-    textAlign: "left",
+    padding: "14px",
   },
-  trEven: { backgroundColor: "#f2f7f7" },
-  trOdd: { backgroundColor: "#ffffff" },
-  td: { padding: "12px", color: "#333", borderBottom: "1px solid #e0e0e0" },
+  trEven: { background: "#f2f7f7" },
+  trOdd: { background: "#fff" },
+  td: {
+    padding: "12px",
+    borderBottom: "1px solid #e0e0e0",
+  },
   editBtn: {
     marginRight: "10px",
     padding: "6px 12px",
     borderRadius: "8px",
     background: "#17a2b8",
     color: "#fff",
-    cursor: "pointer",
     border: "none",
-    fontWeight: "600",
   },
   deleteBtn: {
     padding: "6px 12px",
     borderRadius: "8px",
     background: "#dc3545",
     color: "#fff",
-    cursor: "pointer",
     border: "none",
-    fontWeight: "600",
   },
-  noData: { textAlign: "center", padding: "20px", color: "#555", fontStyle: "italic" },
+  noData: {
+    textAlign: "center",
+    padding: "20px",
+    fontStyle: "italic",
+  },
 };

@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { FaEdit } from "react-icons/fa";
 
 export default function EditKunjungan() {
-  const { id, kunjunganId } = useParams(); // ambil pasienId dan kunjunganId
+  const { id, kunjunganId } = useParams();
   const navigate = useNavigate();
 
   const initialForm = {
@@ -16,20 +16,27 @@ export default function EditKunjungan() {
 
   const [form, setForm] = useState(initialForm);
   const [focusField, setFocusField] = useState("");
+  const [notif, setNotif] = useState("");
 
-  // Ambil data kunjungan untuk prefill
+  // Ambil data kunjungan
   useEffect(() => {
     const fetchKunjungan = async () => {
       try {
-        const res = await axiosClient.get(`/pasien/${id}/kunjungan/${kunjunganId}`);
+        const res = await axiosClient.get(
+          `/pasien/${id}/kunjungan/${kunjunganId}`
+        );
         setForm(res.data);
       } catch (err) {
-        console.error(err);
-        alert("Gagal mengambil data kunjungan");
+        showNotif("Gagal mengambil data kunjungan");
       }
     };
     fetchKunjungan();
   }, [id, kunjunganId]);
+
+  const showNotif = (message) => {
+    setNotif(message);
+    setTimeout(() => setNotif(""), 1500);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -38,18 +45,24 @@ export default function EditKunjungan() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
-      await axiosClient.put(`/pasien/${id}/kunjungan/${kunjunganId}`, form);
-      alert("Data kunjungan berhasil diupdate!");
+      await axiosClient.put(
+        `/pasien/${id}/kunjungan/${kunjunganId}`,
+        form
+      );
+      showNotif("Data kunjungan berhasil diupdate");
+
+      setTimeout(() => {
         navigate(`/app/pasien/${id}/kunjungan`);
+      }, 1500);
     } catch (err) {
-      console.error(err);
-      alert("Gagal mengupdate data kunjungan");
+      showNotif("Gagal mengupdate data kunjungan ");
     }
   };
 
   const handleCancel = () => {
-      navigate(`/app/pasien/${id}/kunjungan`);
+    navigate(`/app/pasien/${id}/kunjungan`);
   };
 
   const fields = [
@@ -60,57 +73,101 @@ export default function EditKunjungan() {
   ];
 
   return (
-    <div style={styles.wrapper}>
-      <form onSubmit={handleSubmit} style={styles.form}>
-        <div style={styles.titleBox}>
-          <FaEdit style={styles.titleIcon} />
-          <h2 style={styles.title}>Edit Kunjungan</h2>
+    <>
+      {/* NOTIF */}
+      {notif && (
+        <div style={overlayStyle}>
+          <div style={notifBoxStyle}>{notif}</div>
         </div>
+      )}
 
-        {fields.map((field) => (
-          <div key={field.name} style={styles.fieldWrapper}>
-            <label style={styles.label}>{field.label}</label>
-            {field.type === "textarea" ? (
-              <textarea
-                name={field.name}
-                value={form[field.name]}
-                onChange={handleChange}
-                style={{
-                  ...styles.inputArea,
-                  ...(focusField === field.name ? styles.inputFocus : {}),
-                }}
-                onFocus={() => setFocusField(field.name)}
-                onBlur={() => setFocusField("")}
-              />
-            ) : (
-              <input
-                type={field.type}
-                name={field.name}
-                value={form[field.name]}
-                onChange={handleChange}
-                style={{
-                  ...styles.input,
-                  ...(focusField === field.name ? styles.inputFocus : {}),
-                }}
-                onFocus={() => setFocusField(field.name)}
-                onBlur={() => setFocusField("")}
-              />
-            )}
+      <div style={styles.wrapper}>
+        <form onSubmit={handleSubmit} style={styles.form}>
+          <div style={styles.titleBox}>
+            <FaEdit style={styles.titleIcon} />
+            <h2 style={styles.title}>Edit Kunjungan</h2>
           </div>
-        ))}
 
-        <div style={styles.buttonGroup}>
-          <button type="button" style={styles.cancelBtn} onClick={handleCancel}>
-            Batal
-          </button>
-          <button type="submit" style={styles.submitBtn}>
-            Update
-          </button>
-        </div>
-      </form>
-    </div>
+          {fields.map((field) => (
+            <div key={field.name} style={styles.fieldWrapper}>
+              <label style={styles.label}>{field.label}</label>
+
+              {field.type === "textarea" ? (
+                <textarea
+                  name={field.name}
+                  value={form[field.name]}
+                  onChange={handleChange}
+                  style={{
+                    ...styles.inputArea,
+                    ...(focusField === field.name
+                      ? styles.inputFocus
+                      : {}),
+                  }}
+                  onFocus={() => setFocusField(field.name)}
+                  onBlur={() => setFocusField("")}
+                />
+              ) : (
+                <input
+                  type={field.type}
+                  name={field.name}
+                  value={form[field.name]}
+                  onChange={handleChange}
+                  style={{
+                    ...styles.input,
+                    ...(focusField === field.name
+                      ? styles.inputFocus
+                      : {}),
+                  }}
+                  onFocus={() => setFocusField(field.name)}
+                  onBlur={() => setFocusField("")}
+                />
+              )}
+            </div>
+          ))}
+
+          <div style={styles.buttonGroup}>
+            <button
+              type="button"
+              style={styles.cancelBtn}
+              onClick={handleCancel}
+            >
+              Batal
+            </button>
+            <button type="submit" style={styles.submitBtn}>
+              Update
+            </button>
+          </div>
+        </form>
+      </div>
+    </>
   );
 }
+
+/* ================= NOTIF STYLE ================= */
+
+const overlayStyle = {
+  position: "fixed",
+  top: 0,
+  left: 0,
+  width: "100vw",
+  height: "100vh",
+  background: "rgba(0,0,0,0.5)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  zIndex: 9999,
+};
+
+const notifBoxStyle = {
+  background: "#fff",
+  padding: "20px 30px",
+  borderRadius: "12px",
+  fontSize: "16px",
+  fontWeight: "600",
+  textAlign: "center",
+};
+
+/* ================= FORM STYLES ================= */
 
 const styles = {
   wrapper: {
@@ -122,7 +179,7 @@ const styles = {
     padding: "20px 0",
     boxSizing: "border-box",
   },
-   form: {
+  form: {
     width: "100%",
     height: "100%",
     background: "#ffffff",
@@ -132,31 +189,42 @@ const styles = {
     fontFamily: "Arial, sans-serif",
     boxSizing: "border-box",
     overflowY: "auto",
-    scrollbarWidth: "none",
-    msOverflowStyle: "none",
   },
   titleBox: {
     display: "flex",
     alignItems: "center",
-    background: "linear-gradient(180deg, #078368ff, #06352d)",
+    background: "linear-gradient(180deg, #078368, #06352d)",
     padding: "15px 20px",
     borderRadius: "12px",
     marginBottom: "25px",
     color: "#fff",
   },
-  titleIcon: { marginRight: "12px", fontSize: "24px" },
-  title: { fontSize: "22px", fontWeight: "700", margin: 0 },
-  fieldWrapper: { display: "flex", flexDirection: "column", marginBottom: "18px" },
-  label: { fontWeight: "600", marginBottom: "8px", color: "#083b34" },
+  titleIcon: {
+    marginRight: "12px",
+    fontSize: "24px",
+  },
+  title: {
+    fontSize: "22px",
+    fontWeight: "700",
+    margin: 0,
+  },
+  fieldWrapper: {
+    display: "flex",
+    flexDirection: "column",
+    marginBottom: "18px",
+  },
+  label: {
+    fontWeight: "600",
+    marginBottom: "8px",
+    color: "#083b34",
+  },
   input: {
     width: "100%",
     padding: "16px",
     borderRadius: "12px",
     border: "1px solid #ccc",
     fontSize: "15px",
-    boxSizing: "border-box",
     background: "#f9f9f9",
-    transition: "all 0.2s",
   },
   inputArea: {
     width: "100%",
@@ -165,10 +233,8 @@ const styles = {
     border: "1px solid #ccc",
     fontSize: "15px",
     minHeight: "90px",
-    boxSizing: "border-box",
     background: "#f9f9f9",
     resize: "none",
-    transition: "all 0.2s",
   },
   inputFocus: {
     border: "1px solid #007bff",
@@ -185,11 +251,10 @@ const styles = {
     padding: "12px 20px",
     borderRadius: "12px",
     border: "none",
-    background: "#7e0707ff",
+    background: "#7e0707",
     color: "#fff",
     fontWeight: "600",
     cursor: "pointer",
-    transition: "0.3s",
   },
   submitBtn: {
     padding: "12px 20px",
@@ -199,6 +264,5 @@ const styles = {
     color: "#fff",
     fontWeight: "700",
     cursor: "pointer",
-    transition: "0.3s",
   },
 };

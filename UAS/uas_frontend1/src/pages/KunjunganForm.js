@@ -16,26 +16,36 @@ export default function KunjunganForm() {
 
   const [form, setForm] = useState(initialForm);
   const [focusField, setFocusField] = useState("");
+  const [notif, setNotif] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
   };
 
+  const showNotif = (message) => {
+    setNotif(message);
+    setTimeout(() => setNotif(""), 1500);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
       await axiosClient.post(`/pasien/${id}/kunjungan`, form);
-      alert("Kunjungan berhasil ditambahkan!");
-      navigate(`/app/pasien/detail/${id}`);
+      showNotif("Kunjungan berhasil ditambahkan ");
+
+      setTimeout(() => {
+        navigate(`/app/pasien/detail/${id}`);
+      }, 1500);
     } catch (err) {
       console.log(err);
-      alert("Gagal menambah kunjungan");
+      showNotif("Gagal menambah kunjungan");
     }
   };
 
   const handleCancel = () => {
-    navigate(`/app/pasien/detail/${id}`); // tombol batal ke detail pasien
+    navigate(`/app/pasien/detail/${id}`);
   };
 
   const fields = [
@@ -46,6 +56,14 @@ export default function KunjunganForm() {
   ];
 
   return (
+    <>
+      {/* NOTIF */}
+      {notif && (
+        <div style={overlayStyle}>
+          <div style={notifBoxStyle}>{notif}</div>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} style={styles.form}>
         <div style={styles.titleBox}>
           <FaNotesMedical style={styles.titleIcon} />
@@ -55,6 +73,7 @@ export default function KunjunganForm() {
         {fields.map((field) => (
           <div key={field.name} style={styles.fieldWrapper}>
             <label style={styles.label}>{field.label}</label>
+
             {field.type === "textarea" ? (
               <textarea
                 name={field.name}
@@ -97,11 +116,37 @@ export default function KunjunganForm() {
           </button>
         </div>
       </form>
+    </>
   );
 }
 
+/* ================= NOTIF STYLE ================= */
+
+const overlayStyle = {
+  position: "fixed",
+  top: 0,
+  left: 0,
+  width: "100vw",
+  height: "100vh",
+  background: "rgba(0,0,0,0.5)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  zIndex: 9999,
+};
+
+const notifBoxStyle = {
+  background: "#fff",
+  padding: "20px 30px",
+  borderRadius: "12px",
+  fontSize: "16px",
+  fontWeight: "600",
+  textAlign: "center",
+};
+
+/* ================= FORM STYLES ================= */
+
 const styles = {
-  
   form: {
     width: "100%",
     height: "100%",
@@ -118,16 +163,31 @@ const styles = {
   titleBox: {
     display: "flex",
     alignItems: "center",
-    background: "linear-gradient(180deg, #078368ff, #06352d)",
+    background: "linear-gradient(180deg, #078368, #06352d)",
     padding: "15px 20px",
     borderRadius: "12px",
     marginBottom: "25px",
     color: "#fff",
   },
-  titleIcon: { marginRight: "12px", fontSize: "24px" },
-  title: { fontSize: "22px", fontWeight: "700", margin: 0 },
-  fieldWrapper: { display: "flex", flexDirection: "column", marginBottom: "18px" },
-  label: { fontWeight: "600", marginBottom: "8px", color: "#083b34" },
+  titleIcon: {
+    marginRight: "12px",
+    fontSize: "24px",
+  },
+  title: {
+    fontSize: "22px",
+    fontWeight: "700",
+    margin: 0,
+  },
+  fieldWrapper: {
+    display: "flex",
+    flexDirection: "column",
+    marginBottom: "18px",
+  },
+  label: {
+    fontWeight: "600",
+    marginBottom: "8px",
+    color: "#083b34",
+  },
   input: {
     width: "100%",
     padding: "16px",
@@ -150,17 +210,25 @@ const styles = {
     resize: "none",
     transition: "all 0.2s",
   },
-  inputFocus: { border: "1px solid #007bff", boxShadow: "0 0 8px rgba(0,123,255,0.3)", outline: "none" },
-  buttonGroup: { display: "flex", justifyContent: "flex-end", gap: "15px", marginTop: "20px" },
+  inputFocus: {
+    border: "1px solid #007bff",
+    boxShadow: "0 0 8px rgba(0,123,255,0.3)",
+    outline: "none",
+  },
+  buttonGroup: {
+    display: "flex",
+    justifyContent: "flex-end",
+    gap: "15px",
+    marginTop: "20px",
+  },
   cancelBtn: {
     padding: "12px 20px",
     borderRadius: "12px",
     border: "none",
-    background: "#7e0707ff",
+    background: "#7e0707",
     color: "#fff",
     fontWeight: "600",
     cursor: "pointer",
-    transition: "0.3s",
   },
   submitBtn: {
     padding: "12px 20px",
@@ -170,6 +238,5 @@ const styles = {
     color: "#fff",
     fontWeight: "700",
     cursor: "pointer",
-    transition: "0.3s",
   },
 };

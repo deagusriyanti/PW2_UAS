@@ -15,6 +15,9 @@ function Login() {
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+
+    // Hapus notif otomatis saat user mulai mengetik
+    if (notif) setNotif("");
   };
 
   const handleSubmit = async (e) => {
@@ -28,7 +31,7 @@ function Login() {
       localStorage.setItem("user", JSON.stringify(res.data.user));
       localStorage.setItem("role", res.data.user.role);
 
-      // TAMPILKAN NOTIF
+      // TAMPILKAN NOTIF SUKSES
       setNotif("Login berhasil");
 
       // DELAY SEBELUM PINDAH
@@ -37,7 +40,13 @@ function Login() {
       }, 1500);
 
     } catch (err) {
-      setNotif("Email atau password salah ❌");
+      // TAMPILKAN NOTIF ERROR
+      setNotif("Email atau password salah ");
+
+      // HILANGKAN NOTIF OTOMATIS SETELAH 2 DETIK
+      setTimeout(() => {
+        setNotif("");
+      }, 500);
     }
   };
 
@@ -63,6 +72,7 @@ function Login() {
               name="email"
               required
               onChange={handleChange}
+              value={form.email}
             />
           </div>
 
@@ -73,6 +83,7 @@ function Login() {
               name="password"
               required
               onChange={handleChange}
+              value={form.password}
             />
           </div>
 

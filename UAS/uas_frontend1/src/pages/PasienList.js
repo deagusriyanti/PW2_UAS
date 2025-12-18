@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from "react";
 import axiosClient from "../api/axiosClient";
 import { Link } from "react-router-dom";
-import { VscSearch } from "react-icons/vsc";
-import { VscOrganization } from "react-icons/vsc"; 
+import { VscSearch, VscOrganization } from "react-icons/vsc";
 
 export default function PasienList() {
   const [pasiens, setPasiens] = useState([]);
   const [search, setSearch] = useState("");
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
+  const [notif, setNotif] = useState("");
+
   const role = localStorage.getItem("role");
 
   useEffect(() => {
@@ -15,26 +18,60 @@ export default function PasienList() {
     });
   }, []);
 
-  const deletePasien = (id) => {
-    if (window.confirm("Yakin ingin menghapus data pasien ini?")) {
-      axiosClient.delete("/pasien/" + id).then(() => {
-        setPasiens(pasiens.filter((p) => p.id !== id));
-      });
+  const openDeleteConfirm = (id) => {
+    setSelectedId(id);
+    setShowConfirm(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await axiosClient.delete("/pasien/" + selectedId);
+
+      setPasiens(pasiens.filter((p) => p.id !== selectedId));
+
+      setShowConfirm(false);
+      setNotif("Data pasien berhasil dihapus ");
+
+      setTimeout(() => {
+        setNotif("");
+      }, 1500);
+    } catch (err) {
+      setShowConfirm(false);
+      setNotif("Gagal menghapus data ");
     }
   };
 
-  const filteredPasiens = pasiens.filter(
-    (p) =>
-      p.nama.toLowerCase().includes(search.toLowerCase()) ||
-      p.nik.toLowerCase().includes(search.toLowerCase())
-  );
-
   return (
     <div style={styles.wrapper}>
+      {/* NOTIF */}
+      {notif && (
+        <div style={overlayStyle}>
+          <div style={notifBoxStyle}>{notif}</div>
+        </div>
+      )}
+
+      {/* MODAL KONFIRMASI DELETE */}
+      {showConfirm && (
+        <div style={overlayStyle}>
+          <div style={confirmBoxStyle}>
+            <p>Yakin ingin menghapus data pasien ini?</p>
+            <div style={{ marginTop: "15px" }}>
+              <button style={cancelBtn} onClick={() => setShowConfirm(false)}>
+                Batal
+              </button>
+              <button style={deleteBtnModal} onClick={confirmDelete}>
+                Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <h1 style={styles.title}>
-  <VscOrganization style={styles.titleIcon} /> Data Pasien
-</h1>
-      {/* Search Bar */}
+        <VscOrganization style={styles.titleIcon} /> Data Pasien
+      </h1>
+
+      {/* SEARCH */}
       <div style={styles.searchWrapper}>
         <div style={styles.searchBox}>
           <div style={styles.iconCircle}>
@@ -50,6 +87,7 @@ export default function PasienList() {
         </div>
       </div>
 
+      {/* TABLE */}
       <div style={styles.tableWrapper}>
         <table style={styles.table}>
           <thead>
@@ -64,20 +102,19 @@ export default function PasienList() {
               <th style={styles.th}>Aksi</th>
             </tr>
           </thead>
-
           <tbody>
-            {filteredPasiens.length > 0 ? (
-              filteredPasiens.map((p, index) => (
+            {pasiens
+              .filter(
+                (p) =>
+                  p.nama.toLowerCase().includes(search.toLowerCase()) ||
+                  p.nik.toLowerCase().includes(search.toLowerCase())
+              )
+              .map((p, index) => (
                 <tr
                   key={p.id}
                   style={{
                     background: index % 2 === 0 ? "#f9f9f9" : "#fff",
-                    transition: "0.3s",
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = "#e0f7ff")}
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.background = index % 2 === 0 ? "#f9f9f9" : "#fff")
-                  }
                 >
                   <td style={styles.td}>{p.nama}</td>
                   <td style={styles.td}>{p.nik}</td>
@@ -90,18 +127,20 @@ export default function PasienList() {
                     <Link style={styles.detailBtn} to={`/app/pasien/detail/${p.id}`}>
                       Detail
                     </Link>
+
                     {role === "admin" && (
                       <button
                         style={styles.deleteBtn}
-                        onClick={() => deletePasien(p.id)}
+                        onClick={() => openDeleteConfirm(p.id)}
                       >
                         Delete
                       </button>
                     )}
                   </td>
                 </tr>
-              ))
-            ) : (
+              ))}
+
+            {pasiens.length === 0 && (
               <tr>
                 <td colSpan={8} style={styles.noData}>
                   Tidak ada pasien ditemukan
@@ -115,32 +154,76 @@ export default function PasienList() {
   );
 }
 
-// Styles
+/* ================= STYLES ================= */
+
+const overlayStyle = {
+  position: "fixed",
+  top: 0,
+  left: 0,
+  width: "100vw",
+  height: "100vh",
+  background: "rgba(0,0,0,0.5)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  zIndex: 9999,
+};
+
+const notifBoxStyle = {
+  background: "#fff",
+  padding: "20px 30px",
+  borderRadius: "12px",
+  fontWeight: "600",
+  fontSize: "16px",
+  textAlign: "center",
+};
+
+const confirmBoxStyle = {
+  background: "#fff",
+  padding: "25px",
+  borderRadius: "12px",
+  textAlign: "center",
+  maxWidth: "300px",
+};
+
+const cancelBtn = {
+  padding: "6px 14px",
+  marginRight: "10px",
+  borderRadius: "8px",
+  border: "none",
+  cursor: "pointer",
+};
+
+const deleteBtnModal = {
+  padding: "6px 14px",
+  borderRadius: "8px",
+  border: "none",
+  background: "#dc3545",
+  color: "#fff",
+  cursor: "pointer",
+};
+
 const styles = {
   wrapper: {
     padding: "15px",
     fontFamily: "Arial, sans-serif",
   },
   title: {
-  textAlign: "center",
-  fontSize: "32px",
-  fontWeight: "700",
-  marginBottom: "50px",
-  background: "linear-gradient(90deg, #078368, #17a2b8)",
-  WebkitBackgroundClip: "text",
-  WebkitTextFillColor: "transparent",
-  textShadow: "1px 1px 2px rgba(0,0,0,0.2)",
-  display: "inline-flex",
-  alignItems: "center",
-  gap: "10px",
-    
-
-},
-titleIcon: {
-  fontSize: "32px",
-  color: "#078368",
-},
-
+    textAlign: "center",
+    fontSize: "32px",
+    fontWeight: "700",
+    marginBottom: "50px",
+    background: "linear-gradient(90deg, #078368, #17a2b8)",
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "10px",
+  },
+  titleIcon: {
+    fontSize: "32px",
+    color: "#078368",
+  },
   searchWrapper: {
     marginBottom: "20px",
     display: "flex",
@@ -160,7 +243,7 @@ titleIcon: {
     width: "30px",
     height: "30px",
     borderRadius: "50%",
-    background: "#729faeff",
+    background: "#729fae",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -168,7 +251,7 @@ titleIcon: {
   },
   searchIcon: {
     fontSize: "15px",
-    color: "#fafcfeff",
+    color: "#fff",
   },
   searchInput: {
     flex: 1,
@@ -194,7 +277,7 @@ titleIcon: {
     fontSize: "14px",
     borderBottom: "2px solid #007bff",
     borderRight: "1px solid #ddd",
-    background: "linear-gradient(90deg, #078368ff, #06352d)",
+    background: "linear-gradient(90deg, #078368, #06352d)",
     color: "#fff",
     textAlign: "left",
   },
