@@ -17,10 +17,9 @@ class Pasien extends Model
         'riwayat_penyakit',
         'alergi_obat',
         'telepon_kontak_darurat'
-       
     ];
 
-    public function kunjungan()
+    public function kunjungans()
     {
         return $this->hasMany(Kunjungan::class);
     }

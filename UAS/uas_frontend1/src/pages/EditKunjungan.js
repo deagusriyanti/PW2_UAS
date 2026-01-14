@@ -12,13 +12,15 @@ export default function EditKunjungan() {
     keluhan: "",
     diagnosa: "",
     tindakan: "",
+    status: "",
   };
 
   const [form, setForm] = useState(initialForm);
   const [focusField, setFocusField] = useState("");
   const [notif, setNotif] = useState("");
 
-  // Ambil data kunjungan
+  const today = new Date().toISOString().split("T")[0];
+
   useEffect(() => {
     const fetchKunjungan = async () => {
       try {
@@ -51,13 +53,14 @@ export default function EditKunjungan() {
         `/pasien/${id}/kunjungan/${kunjunganId}`,
         form
       );
+
       showNotif("Data kunjungan berhasil diupdate");
 
       setTimeout(() => {
         navigate(`/app/pasien/${id}/kunjungan`);
       }, 1500);
     } catch (err) {
-      showNotif("Gagal mengupdate data kunjungan ");
+      showNotif("Gagal mengupdate data kunjungan");
     }
   };
 
@@ -74,7 +77,6 @@ export default function EditKunjungan() {
 
   return (
     <>
-      {/* NOTIF */}
       {notif && (
         <div style={overlayStyle}>
           <div style={notifBoxStyle}>{notif}</div>
@@ -95,13 +97,11 @@ export default function EditKunjungan() {
               {field.type === "textarea" ? (
                 <textarea
                   name={field.name}
-                  value={form[field.name]}
+                  value={form[field.name] || ""}
                   onChange={handleChange}
                   style={{
                     ...styles.inputArea,
-                    ...(focusField === field.name
-                      ? styles.inputFocus
-                      : {}),
+                    ...(focusField === field.name ? styles.inputFocus : {}),
                   }}
                   onFocus={() => setFocusField(field.name)}
                   onBlur={() => setFocusField("")}
@@ -110,13 +110,11 @@ export default function EditKunjungan() {
                 <input
                   type={field.type}
                   name={field.name}
-                  value={form[field.name]}
+                  value={form[field.name] || ""}
                   onChange={handleChange}
                   style={{
                     ...styles.input,
-                    ...(focusField === field.name
-                      ? styles.inputFocus
-                      : {}),
+                    ...(focusField === field.name ? styles.inputFocus : {}),
                   }}
                   onFocus={() => setFocusField(field.name)}
                   onBlur={() => setFocusField("")}
@@ -124,6 +122,25 @@ export default function EditKunjungan() {
               )}
             </div>
           ))}
+
+          {/* 🔥 STATUS (HANYA JIKA HARI INI) */}
+          {form.tanggal_kunjungan === today && (
+            <div style={styles.fieldWrapper}>
+              <label style={styles.label}>Status Pemeriksaan</label>
+              <select
+                name="status"
+                value={form.status || ""}
+                onChange={handleChange}
+                style={styles.input}
+              >
+                <option value="MENUNGGU">Menunggu</option>
+                <option value="DALAM_PEMERIKSAAN">
+                  Dalam Pemeriksaan
+                </option>
+                <option value="SELESAI">Selesai</option>
+              </select>
+            </div>
+          )}
 
           <div style={styles.buttonGroup}>
             <button
@@ -143,7 +160,7 @@ export default function EditKunjungan() {
   );
 }
 
-/* ================= NOTIF STYLE ================= */
+/* ================= STYLE ================= */
 
 const overlayStyle = {
   position: "fixed",
@@ -164,31 +181,20 @@ const notifBoxStyle = {
   borderRadius: "12px",
   fontSize: "16px",
   fontWeight: "600",
-  textAlign: "center",
 };
-
-/* ================= FORM STYLES ================= */
 
 const styles = {
   wrapper: {
-    width: "100%",
-    height: "calc(100vh - 60px)",
-    overflowY: "auto",
     display: "flex",
     justifyContent: "center",
-    padding: "20px 0",
-    boxSizing: "border-box",
+    padding: "20px",
   },
   form: {
     width: "100%",
-    height: "100%",
-    background: "#ffffff",
+    background: "#fff",
     padding: "30px",
     borderRadius: "12px",
     boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
-    fontFamily: "Arial, sans-serif",
-    boxSizing: "border-box",
-    overflowY: "auto",
   },
   titleBox: {
     display: "flex",
@@ -199,70 +205,44 @@ const styles = {
     marginBottom: "25px",
     color: "#fff",
   },
-  titleIcon: {
-    marginRight: "12px",
-    fontSize: "24px",
-  },
-  title: {
-    fontSize: "22px",
-    fontWeight: "700",
-    margin: 0,
-  },
-  fieldWrapper: {
-    display: "flex",
-    flexDirection: "column",
-    marginBottom: "18px",
-  },
-  label: {
-    fontWeight: "600",
-    marginBottom: "8px",
-    color: "#083b34",
-  },
+  titleIcon: { marginRight: "12px", fontSize: "24px" },
+  title: { fontSize: "22px", fontWeight: "700" },
+  fieldWrapper: { marginBottom: "18px" },
+  label: { fontWeight: "600", marginBottom: "8px", display: "block" },
   input: {
     width: "100%",
-    padding: "16px",
-    borderRadius: "12px",
+    padding: "14px",
+    borderRadius: "10px",
     border: "1px solid #ccc",
-    fontSize: "15px",
-    background: "#f9f9f9",
   },
   inputArea: {
     width: "100%",
-    padding: "16px",
-    borderRadius: "12px",
+    padding: "14px",
+    borderRadius: "10px",
     border: "1px solid #ccc",
-    fontSize: "15px",
     minHeight: "90px",
-    background: "#f9f9f9",
-    resize: "none",
   },
   inputFocus: {
     border: "1px solid #007bff",
-    boxShadow: "0 0 8px rgba(0,123,255,0.3)",
-    outline: "none",
+    boxShadow: "0 0 6px rgba(0,123,255,0.3)",
   },
   buttonGroup: {
     display: "flex",
     justifyContent: "flex-end",
     gap: "15px",
-    marginTop: "20px",
   },
   cancelBtn: {
-    padding: "12px 20px",
-    borderRadius: "12px",
-    border: "none",
     background: "#7e0707",
     color: "#fff",
-    fontWeight: "600",
-    cursor: "pointer",
+    border: "none",
+    padding: "12px 20px",
+    borderRadius: "10px",
   },
   submitBtn: {
-    padding: "12px 20px",
-    borderRadius: "12px",
-    border: "none",
     background: "#083b34",
     color: "#fff",
-    fontWeight: "700",
-    cursor: "pointer",
+    border: "none",
+    padding: "12px 20px",
+    borderRadius: "10px",
   },
 };

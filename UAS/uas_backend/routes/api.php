@@ -16,12 +16,15 @@ Route::delete('/users/{id}', [UserController::class, 'destroy']);
 Route::apiResource('pasien', PasienController::class);
 // Kunjungan pasien
 Route::get('/kunjungan', [KunjunganController::class, 'index']);
-Route::get('/pasien/{id}/kunjungan', [KunjunganController::class, 'index']);
+Route::get('/pasien/{id}/kunjungan', [KunjunganController::class, 'indexByPasien']);
 Route::post('/pasien/{id}/kunjungan', [KunjunganController::class, 'store']);
 // GET satu kunjungan pasien
 Route::get('/pasien/{id}/kunjungan/{kunjunganId}', [KunjunganController::class, 'show']);
 Route::put('/pasien/{id}/kunjungan/{kunjunganId}', [KunjunganController::class, 'update']);
 Route::delete('/pasien/{id}/kunjungan/{kunjunganId}', [KunjunganController::class, 'destroy']);
+Route::put('/antrian/{id}/status', [KunjunganController::class, 'updateStatus']);
+
+Route::get('/antrian/hari-ini', [KunjunganController::class, 'antrianHariIni']);
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);

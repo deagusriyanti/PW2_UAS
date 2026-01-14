@@ -12,8 +12,12 @@ class Kunjungan extends Model
         'keluhan',
         'diagnosa',
         'tindakan',
-        'dokter',
-        'catatan'
+        'status',
+        'nomor_antrian',
+    ];
+
+    protected $casts = [
+        'tanggal_kunjungan' => 'datetime',
     ];
 
     public function pasien()

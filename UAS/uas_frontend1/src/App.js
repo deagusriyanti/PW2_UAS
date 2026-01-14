@@ -19,6 +19,17 @@ import Register from "./pages/Register";
 
 import ManajemenAkun from "./pages/ManajemenAkun";
 
+// 🔐 PRIVATE ROUTE (WAJIB DI ATAS APP)
+function PrivateRoute({ children }) {
+  const role = localStorage.getItem("role");
+
+  if (!role) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+}
+
 // --- AdminRoute Wrapper ---
 function AdminRoute({ children }) {
   const role = localStorage.getItem("role");
@@ -37,26 +48,27 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* 🔹 Area utama (pakai Layout) */}
-        <Route path="/app" element={<Layout />}>
-          {/* default /app */}
+        {/* 🔹 Area utama (protected) */}
+        <Route
+          path="/app"
+          element={
+            <PrivateRoute>
+              <Layout />
+            </PrivateRoute>
+          }
+        >
           <Route index element={<Welcome />} />
-
-          {/* Dashboard */}
           <Route path="dashboard" element={<Dashboard />} />
 
-          {/* Pasien */}
           <Route path="pasien" element={<PasienList />} />
           <Route path="pasien/tambah" element={<PasienForm />} />
           <Route path="pasien/detail/:id" element={<PasienDetail />} />
           <Route path="pasien/edit/:id" element={<EditPasien />} />
 
-          {/* Kunjungan */}
           <Route path="pasien/:id/kunjungan" element={<KunjunganList />} />
           <Route path="pasien/:id/kunjungan/tambah" element={<KunjunganForm />} />
           <Route path="pasien/:id/kunjungan/edit/:kunjunganId" element={<EditKunjungan />} />
 
-          {/* Manajemen Akun (hanya admin) */}
           <Route
             path="manajemen-akun"
             element={

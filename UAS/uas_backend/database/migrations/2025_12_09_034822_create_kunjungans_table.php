@@ -12,14 +12,15 @@ return new class extends Migration
     public function up()
 {
     Schema::create('kunjungans', function (Blueprint $table) {
-        $table->id();
-        $table->foreignId('pasien_id')->constrained('pasiens')->onDelete('cascade');
-        $table->date('tanggal_kunjungan');
-        $table->text('keluhan')->nullable();
-        $table->text('diagnosa')->nullable();
-        $table->text('tindakan')->nullable();
-        $table->timestamps();
-    });
+    $table->id();
+    $table->foreignId('pasien_id')->constrained('pasiens')->onDelete('cascade');
+    $table->dateTime('tanggal_kunjungan');
+    $table->text('keluhan')->nullable();
+    $table->text('diagnosa')->nullable();
+    $table->text('tindakan')->nullable();
+    $table->timestamps();
+});
+
 
     }
 
