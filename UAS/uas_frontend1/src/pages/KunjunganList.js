@@ -59,6 +59,16 @@ export default function KunjunganList() {
     }
   };
 
+  const formatTanggal = (dateString) => {
+    if (!dateString) return "-";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("id-ID", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    });
+  };
+
   return (
     <>
       {/* NOTIF */}
@@ -122,7 +132,7 @@ export default function KunjunganList() {
                     key={k.id}
                     style={index % 2 === 0 ? styles.trEven : styles.trOdd}
                   >
-                    <td style={styles.td}>{k.tanggal_kunjungan}</td>
+                    <td style={styles.td}>{formatTanggal(k.tanggal_kunjungan)}</td> 
                     <td style={styles.td}>{k.keluhan}</td>
                     <td style={styles.td}>{k.diagnosa}</td>
                     <td style={styles.td}>{k.tindakan}</td>

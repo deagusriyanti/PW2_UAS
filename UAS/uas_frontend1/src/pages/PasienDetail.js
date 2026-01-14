@@ -16,6 +16,12 @@ export default function PasienDetail() {
 
   if (!pasien) return <p>Loading...</p>;
 
+  const formatJenisKelamin = (jk) => {
+  if (jk === "L") return "Laki-laki";
+  if (jk === "P") return "Perempuan";
+  return jk || "-";
+};
+
   return (
     <div style={styles.page}>
       <h1 style={styles.title}>Detail Pasien</h1>
@@ -36,7 +42,7 @@ export default function PasienDetail() {
         <div style={styles.infoGrid}>
           {[
             { label: "NIK", value: pasien.nik },
-            { label: "Jenis Kelamin", value: pasien.jenis_kelamin },
+            { label: "Jenis Kelamin", value: formatJenisKelamin(pasien.jenis_kelamin) },
             { label: "Tanggal Lahir", value: pasien.tanggal_lahir },
             { label: "Golongan Darah", value: pasien.golongan_darah },
             { label: "Alamat", value: pasien.alamat },
